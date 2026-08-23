@@ -1,0 +1,8 @@
+# nothing generated to ignore yet; browser exports belong in results/
+Thumbs.db
+.DS_Store
+
+# personal study data — never commit to the public repo
+results/
+evaluations/
+practice/

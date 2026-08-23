@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probability Mock Exam (40 Q)</title>
+<style>
+  :root { --bg:#f7f7f9; --card:#fff; --ink:#1c1c1e; --muted:#6b6b70; --accent:#2b5bd7; --ok:#1f8a4c; --bad:#c0392b; --line:#e2e2e6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+  header { position:sticky; top:0; background:var(--card); border-bottom:1px solid var(--line); padding:12px 20px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; z-index:5; }
+  header h1 { font-size:1.1rem; margin:0; flex:1; }
+  .pill { background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:.9rem; }
+  main { max-width:860px; margin:0 auto; padding:20px; }
+  .intro { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:.95rem; }
+  .q { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 20px; margin-bottom:14px; }
+  .q.unanswered-flag { border-color:#e0a800; }
+  .q h3 { margin:0 0 8px; font-size:1rem; }
+  .q .text { margin-bottom:10px; white-space:pre-wrap; }
+  .q img { max-width:100%; border:1px solid var(--line); border-radius:6px; margin:6px 0; }
+  .q .note { color:var(--muted); font-size:.85rem; }
+  .opt { display:flex; gap:10px; padding:6px 8px; border-radius:6px; cursor:pointer; }
+  .opt:hover { background:var(--bg); }
+  .opt input { margin-top:4px; }
+  .conf { margin-top:8px; font-size:.85rem; color:var(--muted); }
+  .conf select { margin-left:6px; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:1rem; cursor:pointer; }
+  button.secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  .actions { display:flex; gap:12px; flex-wrap:wrap; margin:20px 0; }
+  #results { display:none; }
+  .score { font-size:1.6rem; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; background:var(--card); }
+  th, td { border:1px solid var(--line); padding:6px 8px; text-align:left; }
+  td.ok { color:var(--ok); font-weight:600; } td.bad { color:var(--bad); font-weight:600; }
+  textarea { width:100%; min-height:320px; font-family:ui-monospace, Consolas, monospace; font-size:.85rem; padding:10px; border:1px solid var(--line); border-radius:8px; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Probability Mock Exam — 40 Questions</h1>
+  <span class="pill" id="progress">0 / 40 answered</span>
+  <span class="pill" id="timer">00:00</span>
+</header>
+<main>
+  <div class="intro">
+    <strong>Instructions.</strong> Source: Analytics Vidhya, "40 Questions on Probability for all Aspiring Data Scientists" (2017).
+    Answer every question, optionally mark your confidence, then click <em>Submit</em>. Answers are not shown during the exam.
+    After submitting, a results report is generated — copy it and paste it to Claude for interpretation.
+    Use the <em>Reveal correct answers</em> toggle only if you want to see them.<br>
+    <span class="note">Suggested time: 60 minutes. No calculator restriction. Equations are rendered with MathJax (loaded from the web; without internet they show as raw LaTeX).</span>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div class="actions">
+    <button id="submitBtn">Submit exam</button>
+    <button class="secondary" id="resetBtn">Reset</button>
+  </div>
+
+  <section id="results">
+    <h2>Results</h2>
+    <p class="score" id="scoreLine"></p>
+    <p id="topicLine"></p>
+    <label><input type="checkbox" id="revealToggle"> Reveal correct answers in the table below</label>
+    <div style="overflow-x:auto;margin:12px 0"><table id="resultTable"></table></div>
+    <h3>Report to copy &amp; paste</h3>
+    <p class="note">This block contains your picks, confidence, time and per-topic stats — but not the answer key — so you can share it safely.</p>
+    <textarea id="report" readonly></textarea>
+    <div class="actions">
+      <button id="copyBtn">Copy report to clipboard</button>
+      <button class="secondary" id="retryWrong">Retry only the wrong ones</button>
+    </div>
+  </section>
+</main>
+
+<script>
+// ---------- Question bank ----------
+const IMG = 'https://cdn.analyticsvidhya.com/wp-content/uploads/2017/04/';
+const Q = [
+ {t:'Let A and B be events on the same sample space, with P(A) = 0.6 and P(B) = 0.7. Can these two events be disjoint?', o:['Yes','No'], k:'Basic axioms'},
+ {t:'Alice has 2 kids and one of them is a girl. What is the probability that the other child is also a girl?', o:['0.5','0.25','0.333','0.75'], k:'Conditional probability'},
+ {t:'A fair six-sided die is rolled twice. What is the probability of getting 2 on the first roll and not getting 4 on the second roll?', o:['1/36','1/18','5/36','1/6','1/3'], k:'Independence'},
+ {t:'For any three events \\(A, B, C\\) on the same sample space, is the following identity true?\n\\[ P(A \\cup B \\cup C) = P(A \\cap C^{c}) + P(C) + P(B \\cap A^{c} \\cap C^{c}) \\]', o:['True','False'], k:'Basic axioms'},
+ {t:'Consider a tetrahedral (4-sided) die and roll it twice. What is the probability that the number on the first roll is strictly higher than the number on the second roll?', o:['1/2','3/8','7/16','9/16'], k:'Counting'},
+ {t:'Which of the following options cannot be the probability of any event?\n  A) -0.00001   B) 0.5   C) 1.001', o:['Only A','Only B','Only C','A and B','B and C','A and C'], k:'Basic axioms'},
+ {t:'Anita randomly picks 4 cards from a deck of 52 cards and places them back into the deck. Then Babita randomly chooses 8 cards out of the same deck. What is the probability that all 4 cards chosen by Anita are in the set of 8 cards chosen by Babita?', o:['\\( \\dfrac{\\binom{48}{4}}{\\binom{52}{4}} \\)','\\( \\dfrac{\\binom{48}{4}}{\\binom{52}{8}} \\)','\\( \\dfrac{\\binom{48}{8}}{\\binom{52}{8}} \\)','None of the above'], k:'Counting'},
+ {t:'If you are dealt 13 cards, what is the probability that the 13th card is a King?', o:['1/52','1/13','1/26','1/12'], k:'Symmetry'},
+ {t:'A fair six-sided die is rolled 6 times. What is the probability of getting all outcomes as unique?', o:['0.01543','0.01993','0.23148','0.03333'], k:'Counting'},
+ {t:'A group of 60 students is randomly split into 3 classes of equal size. Jack and Jill are two students belonging to that group. What is the probability that Jack and Jill will end up in the same class?', o:['1/3','19/59','18/58','1/2'], k:'Counting'},
+ {t:'We have two coins, A and B. For each toss of coin A the probability of getting heads is 1/2, and for each toss of coin B the probability of getting heads is 1/3. We select a coin at random and toss it until we get a head. The probability of selecting coin A is 1/4 and coin B is 3/4. What is the expected number of tosses to get the first heads?', o:['2.75','3.35','4.13','5.33'], k:'Expectation'},
+ {t:'Suppose a life insurance company sells a $240,000 one-year term life insurance policy to a 25-year-old female for $210. The probability that the female survives the year is 0.999592. Find the expected value of this policy for the insurance company.', o:['$131','$140','$112','$125'], k:'Expectation'},
+ {t:'For events \\(A, B, C\\) with the relevant conditioning events having positive probability, is the following identity true?\n\\[ P(A \\cap B \\cap C^{c}) = P(A)\\, P(C^{c} \\mid A)\\, P(B \\mid A \\cap C^{c}) \\]', o:['True','False'], k:'Conditional probability'},
+ {t:'When is an event A independent of itself?', o:['Always','If and only if P(A) = 0','If and only if P(A) = 1','If and only if P(A) = 0 or 1'], k:'Independence'},
+ {t:'Suppose you are in the final round of "Let\'s Make a Deal" and must choose from three doors – 1, 2 & 3. One door has a car behind it and the other two have goats. You choose Door 1 and the host opens Door 3, which has a goat behind it. To maximise the probability of winning, which would you choose?', o:['Switch your choice','Retain your choice','It doesn\'t matter — the probability of winning is the same with or without revealing one door'], k:'Conditional probability'},
+ {t:'Cross-fertilizing a red and a white flower produces red flowers 25% of the time. We cross-fertilize five pairs of red and white flowers and produce five offspring. What is the probability that there are no red flower plants among the five offspring?', o:['23.7%','37.2%','22.5%','27.3%'], k:'Binomial'},
+ {t:'A roulette wheel has 38 slots – 18 red, 18 black, and 2 green. You play five games and always bet on red. How many games can you expect to win?', o:['1.1165','2.3684','2.6316','4.7368'], k:'Expectation'},
+ {t:'A roulette wheel has 38 slots – 18 red, 18 black, and 2 green. You play five games and always bet on red. What is the probability that you win all 5 games?', o:['0.0368','0.0238','0.0526','0.0473'], k:'Binomial'},
+ {t:'Some test scores follow a normal distribution with a mean of 18 and a standard deviation of 6. What proportion of test takers scored between 18 and 24?', o:['20%','22%','34%','None of the above'], k:'Normal distribution'},
+ {t:'A jar contains 4 marbles: 3 red and 1 white. Two marbles are drawn with replacement after each draw. What is the probability that the same colour marble is drawn twice?', o:['1/2','1/3','5/8','1/8'], k:'Independence'},
+ {t:'Which of the following events is most likely?', o:['At least one 6 when 6 dice are rolled','At least 2 sixes when 12 dice are rolled','At least 3 sixes when 18 dice are rolled','All of the above have the same probability'], k:'Binomial'},
+ {t:'Suppose you were interviewed for a technical role. 50% of the people who sat for the first interview received a call for a second interview. 95% of the people who got a call for a second interview felt good about their first interview. 75% of the people who did not receive a second call also felt good about their first interview. If you felt good after your first interview, what is the probability that you will receive a second-interview call?', o:['66%','56%','75%','85%'], k:'Bayes'},
+ {t:'A coin of diameter 1 inch is thrown on a table covered with a grid of lines each two inches apart. What is the probability that the coin lands inside a square without touching any of the lines of the grid?', o:['\\(1/2\\)','\\(1/4\\)','\\(\\pi/3\\)','\\(1/3\\)'], k:'Geometric probability'},
+ {t:'There are a total of 8 bows: 2 each of green, yellow, orange and red. In how many ways can you select 1 bow (by colour)?', o:['1','2','4','8'], k:'Counting'},
+ {t:'Consider the following probability density function:\n\\[ f(x) = \\frac{1}{8}\\, e^{-x/8}, \\qquad x \\ge 0 \\]\nWhat is \\(P(X \\le 6)\\)?', o:['0.3935','0.5276','0.1341','0.4724'], k:'Continuous distributions'},
+ {t:'In a class of 30 students, approximately what is the probability that two of the students have their birthday on the same day (same day and month; assume no leap year)?', o:['49%','52%','70%','35%'], k:'Counting'},
+ {t:'Ahmed is playing a lottery where he must pick 2 numbers from 0–9 followed by an English letter (26 letters). He may choose the same number both times. If his ticket matches the 2 numbers and 1 letter drawn in order, he wins the grand prize of $10,405. If just his letter matches but one or both numbers do not match, he wins $100. Otherwise he wins nothing. The game costs $5 to play. He has chosen 04R. What is the expected net profit from playing this ticket?', o:['−$2.81','$2.81','−$1.82','$1.82'], k:'Expectation'},
+ {t:'Assume you sell sandwiches. 70% of people choose egg and the rest choose chicken. What is the probability of selling exactly 2 egg sandwiches to the next 3 customers?', o:['0.343','0.063','0.44','0.027'], k:'Binomial'},
+ {t:'What is the probability that a recruit has HIV, given he tested positive on a first ELISA test? The prior probability of anyone having HIV is 0.00148. The true-positive rate for ELISA is 93% and the true-negative rate is 99%.', o:['12%','80%','42%','14%'], k:'Bayes'},
+ {t:'(Continuing Q29) What is the probability of having HIV, given he tested positive on ELISA a second time as well? Prior 0.00148, true-positive rate 93%, true-negative rate 99%.', o:['20%','42%','93%','88%'], k:'Bayes'},
+ {t:'You are playing a game in which a fair coin is tossed multiple times. You have already lost three times, guessing heads when tails appeared. Which statement is correct?', o:['You should guess heads again since tails has already occurred thrice and heads is more likely now','You should say tails because guessing heads is not making you win','You have the same probability of winning with either guess — 50-50 regardless','None of these'], k:'Independence'},
+ {t:'Inference using the frequentist approach will always yield the same result as the Bayesian approach.', o:['TRUE','FALSE'], k:'Bayes'},
+ {t:'Hospital records show that 75% of patients suffering from a disease die due to that disease. What is the probability that exactly 4 out of 6 randomly selected patients recover?', o:['0.17798','0.13184','0.03295','0.35596'], k:'Binomial'},
+ {t:'The students of a class were given two tests. 25% of the class cleared both tests and 45% cleared the first test. What percentage of students passed the second test given that they passed the first test?', o:['25%','42%','55%','45%'], k:'Conditional probability'},
+ {t:'Assume the actual probability of having a boy is 0.51. A couple plans to have 3 children. What is the probability that exactly 2 of them will be boys?', o:['0.38','0.48','0.58','0.68','0.78'], k:'Binomial'},
+ {t:'Heights of 10-year-olds, regardless of gender, closely follow a normal distribution with mean 55 inches and standard deviation 6 inches. Which of the following is true?', o:['We would expect more 10-year-olds to be shorter than 55 inches than taller than 55 inches','Roughly 95% of 10-year-olds are between 37 and 73 inches tall','A 10-year-old who is 65 inches tall would be considered more unusual than one who is 45 inches tall','None of these'], k:'Normal distribution'},
+ {t:'About 30% of human twins are identical and the rest are fraternal. Identical twins are necessarily the same sex: half are male pairs and half female pairs. One quarter of fraternal twins are both male, one quarter both female, and one half are mixed. You have just become a parent of twins and are told they are both girls. What is the probability that they are identical?', o:['50%','72%','46%','33%'], k:'Bayes'},
+ {t:'Rob has a fever and the doctor suspects typhoid. The test is positive when the patient actually has typhoid 80% of the time, and positive when the patient does not have typhoid 10% of the time. If 1% of the population has typhoid, what is the probability that Rob has typhoid given he tested positive?', o:['12%','7%','25%','31.5%'], k:'Bayes'},
+ {t:'Jack has two coins: one real, and one faulty with tails on both sides. He blindfolds himself, picks a coin at random and tosses it. It lands tails up. What is the probability that this tail came from the faulty coin?', o:['1/3','2/3','1/2','1/4'], k:'Bayes'},
+ {t:'A fly has a lifetime uniformly distributed between 4 and 6 days. What is the probability that the fly will die at exactly 5 days?', o:['1/2','1/4','1/3','0'], k:'Continuous distributions'},
+];
+// Answer key (obfuscated so it is not visible at a glance)
+const KEY = atob('QkNDQUJGQUJBQkFDQURBQUJCQ0NBQkJDQkNCQ0FDQ0JDQ0FEQ0JCRA==');
+
+// ---------- Render ----------
+const L = 'ABCDEFGH';
+const quiz = document.getElementById('quiz');
+Q.forEach((q,i)=>{
+  const d = document.createElement('div'); d.className='q'; d.id='q'+i;
+  let h = `<h3>Question ${i+1}</h3><div class="text">${esc(q.t)}</div>`;
+  if (q.img) h += `<img src="${q.img}" alt="Question ${i+1} image">`;
+  if (q.note) h += `<div class="note">${esc(q.note)}</div>`;
+  q.o.forEach((o,j)=>{ h += `<label class="opt"><input type="radio" name="q${i}" value="${L[j]}"><span><b>${L[j]})</b> ${esc(o)}</span></label>`; });
+  h += `<div class="conf">Confidence:<select name="c${i}"><option value="">—</option><option>Sure</option><option>Fairly sure</option><option>Guess</option></select></div>`;
+  d.innerHTML = h; quiz.appendChild(d);
+});
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>'); }
+
+// ---------- Timer & progress ----------
+const start = Date.now(); let elapsed = 0, finished = false;
+setInterval(()=>{ if(finished) return; elapsed = Math.floor((Date.now()-start)/1000);
+  document.getElementById('timer').textContent = fmt(elapsed); }, 1000);
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+quiz.addEventListener('change', ()=>{
+  const n = Q.filter((_,i)=>pick(i)).length;
+  document.getElementById('progress').textContent = `${n} / ${Q.length} answered`;
+});
+function pick(i){ const r = document.querySelector(`input[name=q${i}]:checked`); return r ? r.value : ''; }
+function conf(i){ return document.querySelector(`select[name=c${i}]`).value; }
+
+// ---------- Submit ----------
+document.getElementById('submitBtn').onclick = ()=>{
+  const missing = Q.map((_,i)=>i).filter(i=>!pick(i));
+  if (missing.length && !confirm(`${missing.length} question(s) unanswered (${missing.map(i=>i+1).join(', ')}). Submit anyway? Unanswered count as wrong.`)) {
+    missing.forEach(i=>document.getElementById('q'+i).classList.add('unanswered-flag'));
+    document.getElementById('q'+missing[0]).scrollIntoView({behavior:'smooth'}); return;
+  }
+  finished = true;
+  const rows = Q.map((q,i)=>({n:i+1, topic:q.k, you:pick(i)||'—', correct:KEY[i], ok:pick(i)===KEY[i], conf:conf(i)||'—'}));
+  const score = rows.filter(r=>r.ok).length;
+  const topics = {};
+  rows.forEach(r=>{ topics[r.topic] = topics[r.topic]||{c:0,t:0}; topics[r.topic].t++; if(r.ok) topics[r.topic].c++; });
+  document.getElementById('scoreLine').textContent = `Score: ${score} / ${Q.length} (${Math.round(100*score/Q.length)}%) — time ${fmt(elapsed)}`;
+  document.getElementById('topicLine').innerHTML = '<b>By topic:</b> ' + Object.entries(topics).map(([k,v])=>`${k} ${v.c}/${v.t}`).join(' · ');
+  const renderTable = reveal => {
+    document.getElementById('resultTable').innerHTML =
+      `<tr><th>#</th><th>Topic</th><th>Your answer</th>${reveal?'<th>Correct</th>':''}<th>Result</th><th>Confidence</th></tr>` +
+      rows.map(r=>`<tr><td>${r.n}</td><td>${r.topic}</td><td>${r.you}</td>${reveal?`<td>${r.correct}</td>`:''}<td class="${r.ok?'ok':'bad'}">${r.ok?'✓':'✗'}</td><td>${r.conf}</td></tr>`).join('');
+  };
+  renderTable(false);
+  document.getElementById('revealToggle').onchange = e => renderTable(e.target.checked);
+
+  // Confidence calibration
+  const cal = {};
+  rows.forEach(r=>{ if(r.conf!=='—'){ cal[r.conf]=cal[r.conf]||{c:0,t:0}; cal[r.conf].t++; if(r.ok) cal[r.conf].c++; } });
+
+  let rep = `PROBABILITY MOCK EXAM — RESULTS\nSource: Analytics Vidhya 40 probability questions\nDate: ${new Date().toISOString().slice(0,10)}\nScore: ${score}/${Q.length} (${Math.round(100*score/Q.length)}%)\nTime: ${fmt(elapsed)}\n\nBY TOPIC\n`;
+  Object.entries(topics).forEach(([k,v])=>rep+=`- ${k}: ${v.c}/${v.t}\n`);
+  rep += `\nCONFIDENCE CALIBRATION\n`;
+  Object.entries(cal).forEach(([k,v])=>rep+=`- ${k}: ${v.c}/${v.t} correct\n`);
+  if(!Object.keys(cal).length) rep += '- (no confidence ratings given)\n';
+  rep += `\nPER QUESTION (Q#, topic, my answer, result, confidence)\n`;
+  rows.forEach(r=>rep+=`Q${r.n} | ${r.topic} | ${r.you} | ${r.ok?'CORRECT':'WRONG'} | ${r.conf}\n`);
+  rep += `\nWRONG: ${rows.filter(r=>!r.ok).map(r=>'Q'+r.n).join(', ')||'none'}\n`;
+  rep += `\nPlease interpret these results: identify my weak topics, what concepts each wrong question tests, and suggest what to review.`;
+  document.getElementById('report').value = rep;
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+
+  document.getElementById('retryWrong').onclick = ()=>{
+    rows.forEach(r=>{ document.getElementById('q'+(r.n-1)).classList.toggle('hidden', r.ok); });
+    document.querySelectorAll('input[type=radio]').forEach(x=>x.checked=false);
+    document.getElementById('results').style.display='none'; finished=false;
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+};
+document.getElementById('copyBtn').onclick = ()=>{
+  const ta = document.getElementById('report'); ta.select();
+  navigator.clipboard?.writeText(ta.value).then(()=>alert('Copied!'), ()=>document.execCommand('copy'));
+};
+document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answers?')) location.reload(); };
+</script>
+<script>window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] } };</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+/* DeepSeek study tutor — shared by probability-study-guide.html and probability-mock-exam.html.
+   Usage: Tutor.init({ title, system, context: () => string, quick: [{label, prompt: () => string}] })
+   The API key is entered by the user and kept only in this browser's localStorage. */
+(function () {
+  const KEY = 'deepseek_api_key', MODEL_KEY = 'deepseek_model';
+  const ENDPOINT = 'https://api.deepseek.com/chat/completions';
+  const mem = {};
+  const store = { get(k){ try { return localStorage.getItem(k); } catch(_) { return mem[k] ?? null; } },
+                  set(k,v){ try { localStorage.setItem(k,v); } catch(_) { mem[k]=v; } } };
+  const css = `
+  #dsFab{position:fixed;right:22px;bottom:22px;z-index:50;background:#7b3fe4;color:#fff;border:0;border-radius:999px;padding:12px 18px;font-size:.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+  #dsPanel{position:fixed;right:22px;bottom:76px;width:min(440px,calc(100vw - 44px));height:min(640px,calc(100vh - 110px));z-index:50;background:#fff;border:1px solid #e2e2e6;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:none;flex-direction:column;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1c1c1e;font-size:.92rem}
+  #dsPanel.open{display:flex}
+  #dsPanel header{padding:10px 14px;border-bottom:1px solid #e2e2e6;display:flex;align-items:center;gap:8px;position:static;background:#fafafc;border-radius:12px 12px 0 0}
+  #dsPanel header b{flex:1}
+  #dsPanel header button,#dsPanel .row button{background:#fff;border:1px solid #e2e2e6;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:.85rem;color:#1c1c1e}
+  #dsSettings{padding:10px 14px;border-bottom:1px solid #e2e2e6;background:#fafafc;display:none}
+  #dsSettings.open{display:block}
+  #dsSettings input,#dsSettings select{width:100%;padding:6px 8px;border:1px solid #e2e2e6;border-radius:6px;margin:4px 0 8px;font-size:.9rem}
+  #dsSettings small{color:#6b6b70}
+  #dsMsgs{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  .dsM{padding:8px 12px;border-radius:10px;max-width:92%;white-space:pre-wrap;line-height:1.5}
+  .dsM.u{align-self:flex-end;background:#eef1fb}
+  .dsM.a{align-self:flex-start;background:#f4f1fb}
+  .dsM.e{align-self:stretch;background:#fdecea;color:#8a1f11}
+  .dsM code{background:#eee;padding:1px 4px;border-radius:4px;font-family:ui-monospace,Consolas,monospace}
+  .dsM pre{background:#eee;padding:8px;border-radius:6px;overflow-x:auto}
+  #dsPanel .row{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px 0}
+  #dsInput{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #e2e2e6}
+  #dsInput textarea{flex:1;resize:none;height:58px;padding:8px;border:1px solid #e2e2e6;border-radius:8px;font-family:inherit;font-size:.9rem}
+  #dsInput button{background:#7b3fe4;color:#fff;border:0;border-radius:8px;padding:0 14px;cursor:pointer}
+  #dsInput button:disabled{opacity:.5}`;
+
+  function md(s) { // minimal markdown -> html (code, bold, italics); keep LaTeX intact
+    const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const blocks = []; s = s.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, c) => { blocks.push('<pre>' + esc(c) + '</pre>'); return ' ' + (blocks.length - 1) + ' '; });
+    s = esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/^#{1,4}\s*(.+)$/gm, '<b>$1</b>').replace(/^\s*[-*]\s+/gm, '• ');
+    return s.replace(/ (\d+) /g, (_, i) => blocks[i]);
+  }
+
+  const Tutor = {
+    init(opts) {
+      this.opts = opts; this.history = [];
+      const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+      const fab = document.createElement('button'); fab.id = 'dsFab'; fab.textContent = '🎓 Ask tutor'; document.body.appendChild(fab);
+      const p = document.createElement('div'); p.id = 'dsPanel';
+      p.innerHTML = `<header><b>${opts.title || 'DeepSeek tutor'}</b><button id="dsGear" title="API key & model">⚙ Key</button><button id="dsClear">Clear</button><button id="dsClose">✕</button></header>
+        <div id="dsSettings">
+          <label>DeepSeek API key <input id="dsKey" type="password" placeholder="sk-..." autocomplete="off"></label>
+          <label>Model <select id="dsModel"><option value="deepseek-chat">deepseek-chat (fast)</option><option value="deepseek-reasoner">deepseek-reasoner (step-by-step, slower)</option></select></label>
+          <small>Stored only in this browser (localStorage) and sent only to api.deepseek.com. Get a key at platform.deepseek.com. If the browser blocks the request (CORS) when opened as a local file, serve the folder with <code>python -m http.server</code> and open via http://localhost:8000.</small>
+        </div>
+        <div class="row" id="dsQuick"></div>
+        <div id="dsMsgs"></div>
+        <div id="dsInput"><textarea id="dsText" placeholder="Ask anything about this page… (Enter to send, Shift+Enter for newline)"></textarea><button id="dsSend">Send</button></div>`;
+      document.body.appendChild(p);
+      const $ = id => document.getElementById(id);
+      $('dsKey').value = store.get(KEY) || '';
+      $('dsModel').value = store.get(MODEL_KEY) || 'deepseek-chat';
+      $('dsKey').oninput = e => store.set(KEY, e.target.value.trim());
+      $('dsModel').onchange = e => store.set(MODEL_KEY, e.target.value);
+      fab.onclick = () => { p.classList.toggle('open'); if (!store.get(KEY)) $('dsSettings').classList.add('open'); };
+      $('dsClose').onclick = () => p.classList.remove('open');
+      $('dsGear').onclick = () => $('dsSettings').classList.toggle('open');
+      $('dsClear').onclick = () => { this.history = []; $('dsMsgs').innerHTML = ''; };
+      (opts.quick || []).forEach(q => { const b = document.createElement('button'); b.textContent = q.label; b.onclick = () => this.send(q.prompt(), q.label); $('dsQuick').appendChild(b); });
+      $('dsSend').onclick = () => { const t = $('dsText').value.trim(); if (t) { $('dsText').value = ''; this.send(t); } };
+      $('dsText').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('dsSend').click(); } };
+    },
+    add(role, text) {
+      const m = document.createElement('div'); m.className = 'dsM ' + role; m.innerHTML = md(text);
+      const box = document.getElementById('dsMsgs'); box.appendChild(m); box.scrollTop = box.scrollHeight; return m;
+    },
+    async send(text, label) {
+      const key = store.get(KEY);
+      if (!key) { document.getElementById('dsSettings').classList.add('open'); this.add('e', 'Enter your DeepSeek API key first (⚙ Key).'); return; }
+      this.add('u', label ? `[${label}]` : text);
+      const ctx = (this.opts.context && this.opts.context()) || '';
+      const messages = [{ role: 'system', content: this.opts.system + (ctx ? '\n\n--- CURRENT PAGE CONTEXT ---\n' + ctx.slice(0, 12000) : '') },
+        ...this.history.slice(-10), { role: 'user', content: text }];
+      const out = this.add('a', '…'); const btn = document.getElementById('dsSend'); btn.disabled = true;
+      let full = '';
+      try {
+        const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+          body: JSON.stringify({ model: store.get(MODEL_KEY) || 'deepseek-chat', messages, stream: true, temperature: 0.3 }) });
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 300)}`);
+        const reader = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+        while (true) {
+          const { value, done } = await reader.read(); if (done) break;
+          buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop();
+          for (const ln of lines) {
+            if (!ln.startsWith('data:')) continue; const d = ln.slice(5).trim(); if (d === '[DONE]') continue;
+            try { const delta = JSON.parse(d).choices?.[0]?.delta?.content; if (delta) { full += delta; out.innerHTML = md(full); out.parentNode.scrollTop = out.parentNode.scrollHeight; } } catch (_) {}
+          }
+        }
+        if (!full) full = '(empty response)';
+        out.innerHTML = md(full);
+        this.history.push({ role: 'user', content: text }, { role: 'assistant', content: full });
+        if (window.MathJax?.typesetPromise) MathJax.typesetPromise([out]).catch(() => {});
+      } catch (err) {
+        out.className = 'dsM e';
+        out.textContent = 'Request failed: ' + err.message + (err.message.includes('fetch') ? '\nIf this page is opened as file://, the browser may block the call (CORS). Run "python -m http.server" in the interview-prep folder and open http://localhost:8000/' : '');
+      } finally { btn.disabled = false; }
+    }
+  };
+  window.Tutor = Tutor;
+})();
+
+</script>
+<script>
+// Context for the tutor: before submission only the questions (no key); after submission the full report + wrong questions with correct answers.
+function examContext(){
+  const done = document.getElementById('results').style.display==='block';
+  if(!done) return 'EXAM NOT YET SUBMITTED. Do not reveal answers; you may clarify wording only.\n' + Q.map((q,i)=>`Q${i+1} [${q.k}]: ${q.t}\n`+q.o.map((o,j)=>`  ${L[j]}) ${o}`).join('\n')).join('\n');
+  let c = 'EXAM SUBMITTED.\n' + document.getElementById('report').value + '\n\nQUESTIONS ANSWERED WRONG (with correct answers):\n';
+  Q.forEach((q,i)=>{ if(pick(i)!==KEY[i]) c+=`Q${i+1} [${q.k}] ${q.t}\n`+q.o.map((o,j)=>`  ${L[j]}) ${o}`).join('\n')+`\n  Student answered: ${pick(i)||'—'}   Correct: ${KEY[i]}\n\n`; });
+  return c;
+}
+Tutor.init({
+  title:'DeepSeek exam tutor',
+  system:`You are a probability tutor for data-science interview prep. Use LaTeX \\( \\) / \\[ \\] for math. BEFORE the exam is submitted you must not reveal or hint at answers — only clarify wording. AFTER submission: interpret the results (weak topics, patterns, confidence calibration), then for each wrong question explain the correct reasoning step by step, and suggest what to review.`,
+  context: examContext,
+  quick:[
+    {label:'Interpret my results', prompt:()=>'Interpret my exam results: overall level, weakest topics, confidence calibration, and a prioritised review plan. Then walk through each wrong question with the correct reasoning.'},
+    {label:'Explain one wrong question', prompt:()=>'Pick the wrong question that reveals the most important misconception and explain it thoroughly, then give me a similar new problem to try.'},
+    {label:'Clarify a question (no answer)', prompt:()=>'I will name a question number; clarify its wording and what it is asking without hinting at the answer.'},
+  ]
+});
+</script>
+</body>
+</html>
