@@ -28,13 +28,31 @@
   code { background:var(--code); padding:1px 4px; border-radius:4px; }
   .muted { color:var(--muted); }
   details { margin:8px 0; } summary { cursor:pointer; color:var(--accent); }
-  @media (max-width: 820px) { .wrap { grid-template-columns:1fr; } nav { position:static; height:auto; border-right:0; border-bottom:1px solid var(--line); } main { padding:20px; } }
-  @media print { nav { display:none; } .wrap { display:block; } }
+  mjx-container { max-width:100%; overflow-x:auto; overflow-y:hidden; }
+  main { overflow-wrap:break-word; }
+  [id] { scroll-margin-top:70px; }
+  .topbar { display:none; }
+  @media (max-width: 820px) {
+    .wrap { display:block; }
+    .topbar { display:flex; position:sticky; top:0; z-index:20; align-items:center; gap:10px; background:var(--card); border-bottom:1px solid var(--line); padding:10px 14px; }
+    .topbar b { font-size:1rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar button { background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px 14px; font-size:.95rem; cursor:pointer; }
+    nav { display:none; position:sticky; top:49px; z-index:19; height:auto; max-height:calc(100vh - 49px); max-height:calc(100dvh - 49px); overflow:auto; border-right:0; border-bottom:1px solid var(--line); box-shadow:0 10px 20px rgba(0,0,0,.12); }
+    nav.open { display:block; }
+    nav a { padding:8px 0; border-bottom:1px solid #f0f0f3; }
+    main { padding:16px 14px 70px; }
+    h2 { margin-top:34px; }
+    main table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    input[type=text], input[type=number], input[type=password], select, textarea { font-size:16px !important; }
+    button { min-height:40px; }
+  }
+  @media print { nav, .topbar { display:none; } .wrap { display:block; } }
 </style>
 </head>
 <body>
+<div class="topbar"><button id="navToggle" aria-expanded="false" aria-controls="toc">☰ Contents</button><b>Probability Study Guide</b></div>
 <div class="wrap">
-<nav>
+<nav id="toc">
   <b>Contents</b>
   <a href="#s0">0. How to use this guide</a>
   <a href="#s1">1. Foundations</a>
@@ -897,6 +915,14 @@ Attempt each within 5 minutes on paper, then paste your reasoning into the const
 </main>
 </div>
 <script>
+// ---------- Mobile TOC toggle ----------
+(function(){
+  const btn=document.getElementById('navToggle'), nav=document.getElementById('toc');
+  if(!btn||!nav) return;
+  const close=()=>{ nav.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.onclick=()=>{ const open=nav.classList.toggle('open'); btn.setAttribute('aria-expanded',open); };
+  nav.addEventListener('click',e=>{ if(e.target.closest('a[href^="#"]')) close(); });
+})();
 // ---------- ICAP progress tracker ----------
 window.ICAP=(function(){
   const mem={}; const get=k=>{try{return localStorage.getItem(k);}catch(_){return mem[k]??null;}}; const set=(k,v)=>{try{localStorage.setItem(k,v);}catch(_){mem[k]=v;}};
@@ -1204,7 +1230,7 @@ const WCSS=`.widget{background:#fff;border:1px solid #e2e2e6;border-left:4px sol
 .widget .ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 18px;margin:8px 0;font-size:.9rem}
 .widget label{display:flex;flex-direction:column;gap:2px}
 .widget input[type=range]{width:100%}
-.widget canvas{max-width:100%;background:#fafafc;border:1px solid #eee;border-radius:6px;display:block;margin:8px 0}
+.widget canvas{max-width:100%;height:auto;background:#fafafc;border:1px solid #eee;border-radius:6px;display:block;margin:8px 0}
 .widget .out{font-size:.95rem;margin-top:6px}
 .widget .out b{color:#d9480f}
 .widget button{background:#d9480f;color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer;margin:4px 6px 4px 0}
@@ -1437,7 +1463,12 @@ document.querySelectorAll('.widget[data-w]').forEach(w=>{ try{ W[w.dataset.w](w)
   #dsInput{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #e2e2e6}
   #dsInput textarea{flex:1;resize:none;height:58px;padding:8px;border:1px solid #e2e2e6;border-radius:8px;font-family:inherit;font-size:.9rem}
   #dsInput button{background:#7b3fe4;color:#fff;border:0;border-radius:8px;padding:0 14px;cursor:pointer}
-  #dsInput button:disabled{opacity:.5}`;
+  #dsInput button:disabled{opacity:.5}
+  @media (max-width:600px){
+    #dsFab{right:14px;bottom:14px;padding:12px 16px}
+    #dsPanel{left:8px;right:8px;bottom:8px;width:auto;height:calc(100vh - 60px);height:calc(100dvh - 60px)}
+    #dsSettings input,#dsSettings select,#dsInput textarea{font-size:16px}
+  }`;
 
   function md(s) { // minimal markdown -> html (code, bold, italics); keep LaTeX intact
     const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
