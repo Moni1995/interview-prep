@@ -126,6 +126,13 @@ So \(P(\text{sum}=8)=5/36\approx 0.139\) and \(P(\text{sum}\ne 8)=31/36\).
 <div class="widget" data-w="dice"></div>
 <div class="box trap"><b class="tag">Trap</b> A number like \(-0.00001\) or \(1.001\) can never be a probability (axiom 1). A probability of exactly 0 or exactly 1 <em>is</em> allowed.</div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — quality control</b>
+A batch holds 20 items, 4 of them defective. An inspector draws 2 at random. What is the probability of catching <em>at least one</em> defective?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Choose the sample space (classical rule).</b> All \(\binom{20}{2}=190\) pairs are equally likely.<br>
+<b>2 — Go through the complement</b> ("at least one" trap): the complement is "both fine": \(\binom{16}{2}=120\) pairs.<br>
+<b>3 — Apply \(P(A)=1-P(A^c)\):</b> \(P=1-\dfrac{120}{190}=\dfrac{70}{190}=\dfrac{7}{19}\approx0.368\).<br>
+<b>Sanity check:</b> drawing 2 of 20 with 20 % defective — a bit more than a third catching one feels right; with replacement it would be \(1-0.8^2=0.36\), very close.</div></details></div>
+
 <h3 id="s1b">Set operations, complements, inclusion–exclusion</h3>
 <table>
 <tr><th>Symbol</th><th>Meaning</th><th>Dice example</th></tr>
@@ -152,6 +159,13 @@ Draw the Venn diagram and check that each region is counted exactly once. Partit
 <p><b>De Morgan:</b> \((A\cup B)^c=A^c\cap B^c\) and \((A\cap B)^c=A^c\cup B^c\). Useful for "at least one" questions: \(P(\text{at least one})=1-P(\text{none})\).</p>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — tool-usage survey</b>
+In a team, 60 % use Python, 40 % use R, and 25 % use both. Find: (a) P(uses Python or R), (b) P(uses neither), (c) P(uses exactly one).
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Inclusion–exclusion:</b> \(P(Py\cup R)=0.6+0.4-0.25=0.75\).<br>
+<b>2 — Complement:</b> \(P(\text{neither})=1-0.75=0.25\).<br>
+<b>3 — Disjoint decomposition:</b> exactly one \(=P(Py\cup R)-P(\text{both})=0.75-0.25=0.50\) (or \((0.6-0.25)+(0.4-0.25)\)).<br>
+<b>Bonus:</b> are Python and R use independent? \(P(Py)P(R)=0.24\ne0.25\) — almost, but not quite.</div></details></div>
+
 <h2 id="s2">2. Counting</h2>
 <div class="box"><b class="tag">Core formulas</b>
 <ul>
@@ -188,6 +202,13 @@ A coin of diameter 1 lands on a grid of lines 2 apart. The centre must stay ≥ 
 </div>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — a five-card hand</b>
+From a standard 52-card deck you are dealt 5 cards. Probability of exactly 2 aces?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Count total hands (combinations, order irrelevant):</b> \(\binom{52}{5}=2\,598\,960\).<br>
+<b>2 — Build the favourable hands with the multiplication rule:</b> choose 2 of the 4 aces, \(\binom42=6\); choose the other 3 cards from the 48 non-aces, \(\binom{48}{3}=17\,296\).<br>
+<b>3 — Divide:</b> \(P=\dfrac{6\times17\,296}{2\,598\,960}=\dfrac{103\,776}{2\,598\,960}\approx0.0399\).<br>
+<b>Rule check:</b> the numerator must classify <em>every</em> card of the hand (2 aces AND 3 non-aces) — forgetting the \(\binom{48}{3}\) factor is the classic error.</div></details></div>
+
 <h2 id="s3">3. Conditional probability</h2>
 <div class="box"><b class="tag">Definition</b>
 \[ P(A\mid B)=\frac{P(A\cap B)}{P(B)}, \qquad P(B)>0 . \]
@@ -207,6 +228,12 @@ A coin of diameter 1 lands on a grid of lines 2 apart. The centre must stay ≥ 
 A family has two children, at least one a girl. Sample space (older, younger): GG, GB, BG, BB. Conditioning removes BB, leaving 3 equally likely cases; only GG has two girls, so \(P=1/3\), not \(1/2\). (If instead you were told "the <em>older</em> child is a girl", the answer is \(1/2\).)
 </div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — spam filtering by hand</b>
+30 % of incoming email is spam. The word "free" appears in 40 % of spam. Overall, 16 % of all email contains "free". An email contains "free" — probability it is spam?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Get the joint with the chain rule:</b> \(P(\text{spam}\cap\text{free})=P(\text{spam})\,P(\text{free}\mid\text{spam})=0.3\times0.4=0.12\).<br>
+<b>2 — Apply the conditional-probability definition:</b> \(P(\text{spam}\mid\text{free})=\dfrac{P(\text{spam}\cap\text{free})}{P(\text{free})}=\dfrac{0.12}{0.16}=0.75\).<br>
+<b>3 — Read the direction:</b> we flipped from \(P(\text{free}\mid\text{spam})=0.4\) to \(P(\text{spam}\mid\text{free})=0.75\) — they are different questions with different answers.</div></details></div>
+
 <h3 id="s3a">Chain (multiplication) rule</h3>
 <div class="box">
 \[ P(A\cap B)=P(A)\,P(B\mid A)=P(B)\,P(A\mid B) \]
@@ -216,6 +243,13 @@ In particular \(P(A\cap B\cap C^c)=P(A)\,P(C^c\mid A)\,P(B\mid A\cap C^c)\) — 
 <div class="box ex"><b class="tag">Example — without replacement</b>
 3 black and 3 white marbles; draw two without replacement. \(P(\text{both black})=\dfrac36\cdot\dfrac25=\dfrac15\).
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — urn, three draws</b>
+An urn holds 5 red and 3 blue marbles. Draw 3 without replacement. Find (a) P(red, red, blue in that order), (b) P(all three the same colour).
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Chain rule, updating the urn each draw:</b> \(P(RRB)=\dfrac58\cdot\dfrac47\cdot\dfrac36=\dfrac{60}{336}=\dfrac{5}{28}\approx0.179\).<br>
+<b>2 — For (b), split into disjoint cases:</b> \(P(RRR)=\dfrac{5\cdot4\cdot3}{8\cdot7\cdot6}=\dfrac{60}{336}\), \(P(BBB)=\dfrac{3\cdot2\cdot1}{336}=\dfrac{6}{336}\).<br>
+<b>3 — Add (disjoint events):</b> \(\dfrac{66}{336}=\dfrac{11}{56}\approx0.196\).<br>
+<b>Rule check:</b> each factor conditions on everything drawn so far — that is \(P(A_1)P(A_2\mid A_1)P(A_3\mid A_1\cap A_2)\) in action.</div></details></div>
 
 <h3 id="s3b">Independence</h3>
 <div class="box">
@@ -235,6 +269,12 @@ Need \(P(A\cap A)=P(A)^2\), i.e. \(P(A)=P(A)^2\), which holds only for \(P(A)=0\
 </div>
 <div class="box trap"><b class="tag">Trap — gambler's fallacy</b> After three tails, a fair coin is still 50/50 on the next toss. Independent trials have no memory. Past losses do not make heads "due".</div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — system reliability</b>
+Two independent servers are up 95 % and 90 % of the time. Find (a) P(both up) — a "series" system, (b) P(at least one up) — a "parallel" system.
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Independence product rule:</b> \(P(\text{both})=0.95\times0.90=0.855\).<br>
+<b>2 — Parallel via the complement:</b> \(P(\text{at least one})=1-P(\text{both down})=1-0.05\times0.10=0.995\).<br>
+<b>3 — Where independence enters:</b> both steps multiplied probabilities — legal only because the servers fail independently. If they share a power supply, \(P(\text{both down})>0.005\) and the parallel system is worse than computed. Always ask "is independence justified?" before multiplying.</div></details></div>
+
 <h3 id="s3c">Law of total probability</h3>
 <div class="box">
 If \(B_1,\dots,B_n\) partition \(\Omega\) (disjoint, exhaustive):
@@ -247,6 +287,12 @@ Coin A (\(p=\tfrac12\)) chosen with prob \(\tfrac14\); coin B (\(p=\tfrac13\)) w
 </div>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — traffic split between two models</b>
+70 % of requests go to model A (error rate 2 %), 30 % to model B (error rate 6 %). (a) Overall error rate? (b) An error occurred — probability it came from A?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Law of total probability</b> over the partition {A, B}: \(P(E)=0.7\times0.02+0.3\times0.06=0.014+0.018=0.032\).<br>
+<b>2 — For (b), definition of conditional probability:</b> \(P(A\mid E)=\dfrac{0.014}{0.032}=0.4375\).<br>
+<b>3 — Interpret:</b> A handles 70 % of traffic but causes only ~44 % of the errors; B causes 56 % from just 30 % of traffic. This two-step (total probability, then divide) <em>is</em> Bayes' theorem — next section.</div></details></div>
+
 <h2 id="s4">4. Bayes' theorem</h2>
 <div class="box">
 \[ P(A\mid B)=\frac{P(B\mid A)\,P(A)}{P(B)}=\frac{P(B\mid A)\,P(A)}{P(B\mid A)P(A)+P(B\mid A^c)P(A^c)} \]
@@ -285,12 +331,26 @@ Real coin or double-tails coin, chosen 50/50; the toss shows tails.
 \[ P(\text{faulty}\mid T)=\frac{1\times\frac12}{1\times\frac12+\frac12\times\frac12}=\frac{1/2}{3/4}=\frac23 . \]
 </div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — fraud flagging</b>
+0.5 % of transactions are fraudulent. A model flags 95 % of fraud but also 3 % of legitimate transactions. A transaction is flagged — probability it is fraud?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Name the pieces:</b> prior \(P(F)=0.005\); likelihoods \(P(\text{flag}\mid F)=0.95\), \(P(\text{flag}\mid F^c)=0.03\).<br>
+<b>2 — Evidence via total probability:</b> \(P(\text{flag})=0.95\times0.005+0.03\times0.995=0.00475+0.02985=0.0346\).<br>
+<b>3 — Bayes:</b> \(P(F\mid\text{flag})=\dfrac{0.00475}{0.0346}\approx0.137\).<br>
+<b>4 — Frequency check (per 100 000):</b> 500 fraud → 475 flagged; 99 500 legit → 2 985 flagged; \(475/3460=13.7\,\%\). Most flags are false alarms because fraud is rare — the base rate dominates.</div></details></div>
+
 <h3 id="s4b">Sequential (Bayesian) updating</h3>
 <div class="box">
 Today's posterior becomes tomorrow's prior. After a second <em>independent</em> positive ELISA:
 \[ P(D\mid++)=\frac{0.93\times0.12}{0.93\times0.12+0.01\times0.88}=\frac{0.1116}{0.1204}\approx0.93 . \]
 Equivalent one-shot form using the <b>likelihood ratio</b> \(LR=\dfrac{0.93}{0.01}=93\): posterior odds = prior odds × \(LR^k\). Prior odds \(=0.00148/0.99852\approx 1/675\); after two tests odds \(\approx 93^2/675\approx 12.8\), i.e. \(P\approx 0.93\). A third positive would push it to ≈ 0.999.
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — a second, independent flag</b>
+The same transaction is also flagged by a second, independent model with the same rates. Now what is the probability of fraud?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Odds form:</b> after flag 1 the odds are \(\dfrac{0.137}{0.863}\approx0.159\).<br>
+<b>2 — Likelihood ratio of a flag:</b> \(LR=\dfrac{0.95}{0.03}\approx31.7\).<br>
+<b>3 — Multiply:</b> posterior odds \(=0.159\times31.7\approx5.04\) ⇒ \(P=\dfrac{5.04}{6.04}\approx0.83\).<br>
+<b>Rule check:</b> yesterday's posterior became today's prior; independence of the two models (given the truth) is what justified multiplying by \(LR\) once more. Two weak signals compound into a strong one.</div></details></div>
 
 <h3 id="s4c">Monty Hall and friends</h3>
 <div class="box ex"><b class="tag">Monty Hall</b>
@@ -304,6 +364,14 @@ Bayes check: \(P(\text{host opens 3}\mid\text{car at 1})=\tfrac12\), \(P(\text{h
 </div>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — Monty Hall with an ignorant host</b>
+Same game, but this time the host does NOT know where the car is: he opens one of the other two doors at random, and it happens to reveal a goat. Should you still switch?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Write the likelihood of the observation under each hypothesis</b> (you picked door 1, host opened door 3, goat visible):<br>
+car@1: host opens 3 with prob \(\tfrac12\), always goat → \(\tfrac12\). car@2: opens 3 with prob \(\tfrac12\), it is a goat → \(\tfrac12\). car@3: goat cannot be shown → 0.<br>
+<b>2 — Bayes with equal priors:</b> \(P(\text{car@1}\mid\text{obs})=\dfrac{1/2}{1/2+1/2}=\dfrac12\) — switching now gains <em>nothing</em>.<br>
+<b>3 — Compare with the classic host</b> (who always shows a goat deliberately): likelihoods were \(\tfrac12,1,0\) → switch wins \(\tfrac23\).<br>
+<b>Moral:</b> the information content of evidence depends on the <em>process</em> that produced it, not just on what you saw. This is the single most transferable Bayes lesson.</div></details></div>
+
 <h2 id="s5">5. Random variables</h2>
 <p>A <b>random variable</b> \(X\) maps each outcome to a number, so we can do arithmetic with uncertainty. Coin: \(X=1\) for heads, \(0\) for tails. Two dice: \(Y=\) sum \(\in\{2,\dots,12\}\), not equally likely.</p>
 <ul>
@@ -319,6 +387,14 @@ Formally \(f(x)=\lim_{\Delta\to0}\dfrac{P(x\le X\le x+\Delta)}{\Delta}\) — a d
 <b>CDF</b> (both): \(F(x)=P(X\le x)\), non-decreasing from 0 to 1; \(P(a&lt;X\le b)=F(b)-F(a)\); for continuous \(X\), \(f=F'\).
 </div>
 <div class="box trap"><b class="tag">Trap</b> "A fly lives between 4 and 6 days. Probability it dies at <em>exactly</em> 5 days?" For a continuous lifetime, \(P(X=5)=\int_5^5 f=0\). Only intervals have positive probability (e.g. \(P(4.9\le X\le5.1)\)).</div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — an unnormalised density</b>
+A random variable has density \(f(x)=c\,x^2\) on \([0,2]\) (0 elsewhere). Find \(c\), \(P(X>1)\), and the median.
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Normalisation axiom:</b> \(\int_0^2 c\,x^2dx=c\cdot\tfrac{8}{3}=1\Rightarrow c=\tfrac38\).<br>
+<b>2 — Build the CDF:</b> \(F(x)=\int_0^x \tfrac38t^2dt=\dfrac{x^3}{8}\) on \([0,2]\).<br>
+<b>3 — Use it:</b> \(P(X>1)=1-F(1)=1-\tfrac18=\tfrac78\).<br>
+<b>4 — Median solves \(F(m)=\tfrac12\):</b> \(m^3=4\Rightarrow m=4^{1/3}\approx1.587\).<br>
+<b>Rule check:</b> the density rises like \(x^2\), so most mass sits near 2 — a median of 1.59 (well above the midpoint 1) is consistent.</div></details></div>
 
 <h3 id="s5b">Expectation and variance</h3>
 <div class="box">
@@ -341,6 +417,12 @@ Two digits (0–9, repeats allowed) + one letter. \(P(\text{grand})=\dfrac1{100\
 </div>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — a risky project decision</b>
+A project succeeds with probability 0.3, paying $500k; otherwise it loses $100k. Compute the expected profit and the standard deviation. Should a team that can only afford one attempt take it?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Expectation:</b> \(E[X]=0.3(500)+0.7(-100)=150-70=\$80\text{k}\).<br>
+<b>2 — Variance shortcut:</b> \(E[X^2]=0.3(500^2)+0.7(100^2)=75\,000+7\,000=82\,000\); \(\mathrm{Var}=82\,000-80^2=75\,600\) ⇒ SD \(\approx\$275\text{k}\).<br>
+<b>3 — Interpret:</b> positive expectation but the SD dwarfs the mean — a single attempt loses money 70 % of the time. Expected value is a <em>long-run average</em>; for one-shot decisions you must also look at the distribution (here: can you survive the −$100k branch?).</div></details></div>
+
 <h2 id="s6">6. Key distributions</h2>
 
 <h3 id="s6a">Bernoulli and binomial</h3>
@@ -367,6 +449,14 @@ Shape: symmetric when \(p=0.5\); skewed otherwise; approaches a normal curve as 
 At least one 6 in 6 rolls: \(1-(5/6)^6=0.665\). At least two 6s in 12 rolls: \(1-(5/6)^{12}-12(1/6)(5/6)^{11}=0.619\). At least three 6s in 18 rolls: \(0.597\). Same expected count (1, 2, 3) but the spread shrinks relative to the mean, so "at least the mean" gets slightly less likely. The first is most likely.
 </div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — drone passes over a damaged field</b>
+Each drone pass detects existing hail damage with probability 0.8, passes independent. With 3 passes: (a) P(detected at least once), (b) P(detected in exactly 2 passes), (c) expected number of detecting passes.
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Model:</b> detections \(\sim\) Binomial\((n=3,p=0.8)\).<br>
+<b>2 — (a) complement:</b> \(1-(0.2)^3=0.992\).<br>
+<b>3 — (b) binomial PMF:</b> \(\binom32(0.8)^2(0.2)=3\times0.64\times0.2=0.384\).<br>
+<b>4 — (c) mean:</b> \(np=2.4\).<br>
+<b>Rule check:</b> the three answers used three different tools (complement, PMF, expectation) on one model — recognising the model first is what makes the rest mechanical.</div></details></div>
+
 <h3 id="s6b">Geometric and Poisson</h3>
 <div class="box">
 <b>Geometric(\(p\))</b> — number of trials until the first success: \(P(X=k)=(1-p)^{k-1}p\), \(E[X]=1/p\). Memoryless.<br>
@@ -374,6 +464,12 @@ At least one 6 in 6 rolls: \(1-(5/6)^6=0.665\). At least two 6s in 12 rolls: \(1
 \[ P(X=k)=\frac{e^{-\lambda}\lambda^k}{k!},\qquad E[X]=\mathrm{Var}(X)=\lambda . \]
 Approximates Binomial(\(n,p\)) when \(n\) large, \(p\) small, \(\lambda=np\).
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — flaky test & weekly errors</b>
+(a) A flaky CI failure reproduces on any run with probability 0.1. Expected runs to reproduce it, and P(more than 20 runs needed)? (b) A service throws errors at 0.5/day. P(at least one error next week)?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) Geometric(0.1):</b> \(E=1/p=10\) runs; \(P(X>20)=(0.9)^{20}\approx0.122\) — a 12 % chance the bug hides past 20 runs even though the mean is 10; geometric tails are long.<br>
+<b>2 — (b) Poisson over a window:</b> weekly count \(\sim\) Poisson\((\lambda=0.5\times7=3.5)\); \(P(\ge1)=1-e^{-3.5}\approx0.970\).<br>
+<b>Rule check:</b> geometric answers "how long until the first success", Poisson answers "how many events in a window" — pick by the question's shape, not by habit.</div></details></div>
 
 <h3 id="s6c">Uniform and exponential (continuous)</h3>
 <div class="box">
@@ -385,6 +481,13 @@ Approximates Binomial(\(n,p\)) when \(n\) large, \(p\) small, \(\lambda=np\).
 \[ P(X\le6)=1-e^{-6/8}=1-0.4724=0.5276 . \]
 Insect lifetime uniform on 0–16 days: \(P(5\le X\le6)=\int_5^6\tfrac1{16}dx=1/16\).
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — battery lifetimes and bus stops</b>
+(a) A battery\'s lifetime is exponential with mean 5 years. P(it lasts beyond 8 years)? Given it has already survived 3 years, P(it reaches 8)? (b) Buses arrive every 15 minutes and you arrive at a uniformly random time. Expected wait and P(wait < 5 min)?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) exponential survival:</b> \(\lambda=1/5\); \(P(X>8)=e^{-8/5}=e^{-1.6}\approx0.202\).<br>
+<b>2 — Memorylessness:</b> \(P(X>8\mid X>3)=P(X>5)=e^{-1}\approx0.368\) — the 3 years already served are irrelevant.<br>
+<b>3 — (b) uniform wait on [0, 15]:</b> \(E=7.5\) min; \(P(W<5)=5/15=1/3\).<br>
+<b>Contrast:</b> the uniform wait has a hard ceiling (15 min); the exponential has no ceiling and no memory — two very different "waiting" models.</div></details></div>
 
 <h3 id="s6d">Normal distribution, CLT, z-scores</h3>
 <div class="box">
@@ -409,6 +512,13 @@ For i.i.d. \(X_i\) with mean \(\mu\) and variance \(\sigma^2\), the sample mean 
 </div>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — crop yields, single plot vs field average</b>
+Plot yields are \(N(3.2,\,0.5^2)\) t/ha. (a) P(a single plot yields under 2.5)? (b) For a field of 25 independent plots, P(the field average is under 3.0)?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) z-score:</b> \(z=\dfrac{2.5-3.2}{0.5}=-1.4\); \(\Phi(-1.4)\approx0.081\) — about 8 % of plots.<br>
+<b>2 — (b) CLT for the mean:</b> \(\bar X\sim N\big(3.2,\,(0.5/\sqrt{25})^2\big)=N(3.2,\,0.1^2)\).<br>
+<b>3 — z-score again:</b> \(z=\dfrac{3.0-3.2}{0.1}=-2\); \(\Phi(-2)\approx0.023\).<br>
+<b>Interpret:</b> a single low plot is common (8 %), a low <em>field average</em> is rare (2.3 %) — averaging shrinks the spread by \(\sqrt n\). Mixing up the SD of one observation with the SE of a mean is the most common normal-distribution error in interviews.</div></details></div>
+
 <h2 id="s7">7. Frequentist vs Bayesian</h2>
 <table>
 <tr><th></th><th>Frequentist</th><th>Bayesian</th></tr>
@@ -421,6 +531,12 @@ For i.i.d. \(X_i\) with mean \(\mu\) and variance \(\sigma^2\), the sample mean 
 <p>They do <b>not</b> always give the same answer: with strong priors or small data the Bayesian estimate is pulled toward the prior; they converge as data grows (if the prior is not degenerate). Interview line: "Frequentists ask <em>how likely is this data given the hypothesis</em>; Bayesians ask <em>how likely is the hypothesis given the data</em>."</p>
 
 <!-- ============================================================ -->
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — 10 heads in 12 flips, both ways</b>
+A coin lands heads 10 times in 12 flips. Analyse it as a frequentist and as a Bayesian.
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Frequentist:</b> MLE \(\hat p=10/12\approx0.83\). Test \(H_0\!: p=0.5\): \(P(X\ge10)=\big[\binom{12}{10}+\binom{12}{11}+\binom{12}{12}\big]/2^{12}=79/4096\approx0.019\); two-sided p ≈ 0.039 — reject at 5 %.<br>
+<b>2 — Bayesian:</b> flat prior Beta(1,1) + data → posterior Beta(11, 3); posterior mean \(=\dfrac{11}{14}\approx0.786\); \(P(p>0.5\mid\text{data})\approx0.99\).<br>
+<b>3 — Compare:</b> both point the same way, but the numbers answer different questions — "how surprising is the data under fairness?" vs "what do I now believe about \(p\)?" With only 12 flips the Bayesian estimate is pulled toward the prior (0.786 < 0.833).</div></details></div>
+
 <h2 id="s8">8. Classic traps (where marks are lost)</h2>
 <ol>
 <li><b>Disjoint ≠ independent.</b> Disjoint: \(P(A\cap B)=0\). Independent: \(P(A\cap B)=P(A)P(B)\).</li>
@@ -527,6 +643,12 @@ For \(m=3\): \(1-3\big(\tfrac23\big)^k+3\big(\tfrac13\big)^k\). Check \(k=3\): \
 \(n\) people draw names at random; \(P(\text{nobody draws themselves})=\sum_{j=0}^{n}\frac{(-1)^j}{j!}\to e^{-1}\approx0.368\). Already at \(n=4\) it is \(0.375\). Interview follow-up: expected number of people who draw themselves = 1 for every \(n\) (indicators, see A3).
 </div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — reviewers and bins</b>
+(a) Five reviewers are randomly assigned one paper each (their own papers are among the five). P(nobody reviews their own paper)? (b) Six balls are dropped uniformly into 3 bins. P(no bin empty)?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) derangement via inclusion–exclusion:</b> \(\sum_{j=0}^{5}\frac{(-1)^j}{j!}=1-1+\tfrac12-\tfrac16+\tfrac1{24}-\tfrac1{120}=\tfrac{44}{120}\approx0.367\) — already near \(e^{-1}\).<br>
+<b>2 — (b) the bins formula:</b> \(1-3\big(\tfrac23\big)^6+3\big(\tfrac13\big)^6=1-\tfrac{192}{729}+\tfrac{3}{729}=\tfrac{540}{729}\approx0.741\).<br>
+<b>Rule check:</b> in both, the events being excluded ("reviewer \(i\) gets own paper", "bin \(i\) empty") overlap, so the alternating sum corrects the double counting that a naive \(\sum P(A_i)\) commits.</div></details></div>
+
 <h3 id="a2">A2. Conditioning on a random first stage</h3>
 <div class="box">
 <b>Law of total probability (countable partition)</b> \(\;P(E)=\sum_{k} P(E\mid K=k)\,P(K=k)\).<br>
@@ -544,6 +666,13 @@ Flip a fair coin until the first head; first head on flip \(K\) gives \(K\) ball
 <div class="box ex"><b class="tag">Worked — random number of summands</b>
 A store gets \(N\sim\text{Poisson}(20)\) customers a day; each spends on average $35. Expected daily revenue \(=E[N]E[X]=\$700\). Variance needs the tower rule: \(\mathrm{Var}=E[N]\mathrm{Var}(X)+\mathrm{Var}(N)E[X]^2\).
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — die, then coins</b>
+Roll a fair die; if it shows \(k\), flip \(k\) fair coins. Probability of getting no heads at all?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Condition on the first stage:</b> \(P(\text{no heads}\mid K=k)=(1/2)^k\).<br>
+<b>2 — Law of total probability:</b> \(P=\sum_{k=1}^{6}\tfrac16\big(\tfrac12\big)^k=\tfrac16\Big(1-\tfrac1{64}\Big)=\tfrac16\cdot\tfrac{63}{64}=\tfrac{21}{128}\approx0.164\).<br>
+<b>3 — Bonus (tower rule):</b> expected number of heads \(=E[K]\cdot\tfrac12=3.5\times0.5=1.75\).<br>
+<b>Sanity:</b> the answer must sit between \((1/2)^6\approx0.016\) and \((1/2)^1=0.5\) — it does, closer to the small-\(k\) cases because they dominate the "no heads" event.</div></details></div>
 
 <h3 id="a3">A3. Expectation tricks: indicators, first-step analysis, memorylessness</h3>
 <div class="box">
@@ -563,6 +692,12 @@ A store gets \(N\sim\text{Poisson}(20)\) customers a day; each spends on average
 </div>
 <div class="widget" data-w="coupon"></div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — counting with indicators</b>
+(a) 20 people: expected number of <em>pairs</em> sharing a birthday? (b) 10 balls thrown uniformly into 5 bins: expected number of empty bins?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) one indicator per pair:</b> \(E=\binom{20}{2}\cdot\dfrac1{365}=\dfrac{190}{365}\approx0.52\) — about half a pair on average, matching the ~50 % chance of at least one match at \(n=23\).<br>
+<b>2 — (b) one indicator per bin:</b> \(P(\text{bin } i \text{ empty})=(4/5)^{10}\approx0.107\), so \(E=5\times0.107\approx0.54\).<br>
+<b>Rule check:</b> the pair events and the bin events are dependent, and linearity did not care. Whenever a question says "expected number of …", reach for indicators before anything else.</div></details></div>
+
 <h3 id="a4">A4. Joint distributions, covariance, correlation</h3>
 <div class="box">
 \[ \mathrm{Cov}(X,Y)=E[XY]-E[X]E[Y],\qquad \rho=\frac{\mathrm{Cov}(X,Y)}{\sigma_X\sigma_Y}\in[-1,1] \]
@@ -573,6 +708,13 @@ Independent ⇒ uncorrelated; the converse is <b>false</b>: \(X\) uniform on \(\
 <div class="box ex"><b class="tag">Example — portfolio / ensemble variance</b>
 Average of \(n\) predictors each with variance \(\sigma^2\) and pairwise correlation \(\rho\): \(\mathrm{Var}(\bar X)=\rho\sigma^2+\frac{1-\rho}{n}\sigma^2\). As \(n\to\infty\) variance floors at \(\rho\sigma^2\) — this is why bagging/random forests decorrelate trees (feature subsampling) instead of only adding more of them.
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — correlation of a sum with its part</b>
+Roll two fair dice, \(X\) and \(Y\), and let \(S=X+Y\). Find \(\mathrm{Cov}(X,S)\) and \(\rho(X,S)\).
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Bilinearity:</b> \(\mathrm{Cov}(X,S)=\mathrm{Cov}(X,X)+\mathrm{Cov}(X,Y)=\mathrm{Var}(X)+0=\tfrac{35}{12}\approx2.92\).<br>
+<b>2 — Variance of the sum (independence):</b> \(\mathrm{Var}(S)=2\times\tfrac{35}{12}\).<br>
+<b>3 — Correlation:</b> \(\rho=\dfrac{\mathrm{Var}(X)}{\sqrt{\mathrm{Var}(X)}\sqrt{2\mathrm{Var}(X)}}=\dfrac1{\sqrt2}\approx0.707\).<br>
+<b>Interpret:</b> a total is correlated \(1/\sqrt2\) with each of its two equal parts — the same arithmetic explains why a portfolio co-moves with each holding, and why a model ensemble correlates with its members.</div></details></div>
 
 <h3 id="a5">A5. Transformations and order statistics</h3>
 <div class="box">
@@ -588,6 +730,12 @@ Average of \(n\) predictors each with variance \(\sigma^2\) and pairwise correla
 </ul>
 </div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — sensor fleet</b>
+Three independent sensors each have Exp(1/10 yr) lifetimes. (a) Distribution and mean of the time to the <em>first</em> failure? (b) P(all three survive 5 years)?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) min of exponentials:</b> rates add: first failure \(\sim\text{Exp}(3/10)\), mean \(10/3\approx3.3\) years — three sensors fail three times as fast as one.<br>
+<b>2 — (b) independence product:</b> \(P=\big(e^{-5/10}\big)^3=e^{-1.5}\approx0.223\) — the same number as \(P(\text{Exp}(3/10)>5)\), confirming (a).<br>
+<b>3 — Bonus:</b> P(sensor 2 is the first to fail) \(=\dfrac{\lambda_2}{\lambda_1+\lambda_2+\lambda_3}=\dfrac13\) by symmetry.</div></details></div>
+
 <h3 id="a6">A6. Poisson process</h3>
 <div class="box">
 Events arriving "at random" at rate \(\lambda\): counts in any window of length \(t\) are Poisson\((\lambda t)\); gaps between events are i.i.d. Exp\((\lambda)\); counts in disjoint windows are independent.<br>
@@ -601,6 +749,13 @@ Events arriving "at random" at rate \(\lambda\): counts in any window of length 
 <li>1000 fields, each with a 0.2 % chance of hail damage: number damaged ≈ Poisson(2): \(P(0)=0.135\), \(P(\ge3)=0.323\).</li>
 </ul>
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — request spikes and thinning</b>
+A web service receives 120 requests/min. (a) P(a given second gets more than 2 requests)? (b) 5 % of requests are API calls — what process do the API calls follow, and what is the expected gap between them?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) restate the rate for the window:</b> 120/min = 2/sec, so the per-second count is Poisson(2).<br>
+<b>2 — Complement over 0, 1, 2:</b> \(P(\ge3)=1-e^{-2}(1+2+2)=1-5e^{-2}\approx0.323\).<br>
+<b>3 — (b) thinning:</b> independent 5 % selection of a Poisson process is again Poisson, rate \(0.05\times120=6\)/min; gaps are Exp(6/min), expected gap 10 s.<br>
+<b>Rule check:</b> converting the rate to the window you are asked about (step 1) is where most mistakes happen.</div></details></div>
 
 <h3 id="a7">A7. Markov chains</h3>
 <div class="box">
@@ -616,6 +771,13 @@ A sequence \(X_0,X_1,\dots\) where the next state depends only on the current on
 </div>
 <div class="widget" data-w="ruin"></div>
 
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — churn steady state</b>
+Each month 10 % of active users churn; each month 2 % of churned users reactivate. In the long run, what fraction of users is active?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — Model as a 2-state Markov chain</b> with \(P(\text{A}\to\text{C})=0.1\), \(P(\text{C}\to\text{A})=0.02\).<br>
+<b>2 — Stationarity balances the flows:</b> \(\pi_A\times0.1=\pi_C\times0.02\Rightarrow\pi_C=5\pi_A\).<br>
+<b>3 — Normalise:</b> \(\pi_A=\dfrac16\approx16.7\,\%\) active, \(83.3\,\%\) churned.<br>
+<b>Interpret:</b> the long-run split depends only on the <em>ratio</em> of the two rates — halving churn or doubling reactivation moves the steady state identically. This balance-the-flows shortcut solves any 2-state chain instantly.</div></details></div>
+
 <h3 id="a8">A8. Inequalities, LLN, CLT — how sure can you be?</h3>
 <div class="box">
 <b>Markov:</b> \(X\ge0\Rightarrow P(X\ge a)\le E[X]/a\). &nbsp; <b>Chebyshev:</b> \(P(|X-\mu|\ge k\sigma)\le1/k^2\). &nbsp; <b>Chernoff/Hoeffding</b> (bounded i.i.d.): \(P(|\bar X-\mu|\ge t)\le2e^{-2nt^2/(b-a)^2}\).<br>
@@ -629,6 +791,13 @@ A sequence \(X_0,X_1,\dots\) where the next state depends only on the current on
 <li>Simulation accuracy: a Monte Carlo estimate of a probability \(p\) from \(n\) runs has SE \(\sqrt{p(1-p)/n}\) — 10 000 runs give about ±1 %.</li>
 </ul>
 </div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — latency guarantees</b>
+Response latency has mean 200 ms and SD 50 ms, distribution unknown. (a) Bound P(latency outside [50, 350] ms). (b) If latency were normal, what would that probability be? (c) How many samples to estimate the mean within ±10 ms at 95 % confidence?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) Chebyshev</b> (no distributional assumption): 150 ms \(=3\sigma\), so \(P\le1/3^2=1/9\approx11\,\%\).<br>
+<b>2 — (b) normal:</b> \(2\Phi(-3)\approx0.27\,\%\) — Chebyshev is loose but unconditional.<br>
+<b>3 — (c) CLT sample size:</b> \(n=\Big(\dfrac{1.96\times50}{10}\Big)^2\approx96\).<br>
+<b>Interpret:</b> use Chebyshev when you must defend a claim with no assumptions (SLAs, adversarial reviews); use the normal numbers when the CLT or data justifies them.</div></details></div>
 
 <h3 id="a9">A9. From probability to inference (what DS interviews actually ask)</h3>
 <div class="box">
@@ -648,6 +817,13 @@ A sequence \(X_0,X_1,\dots\) where the next state depends only on the current on
 </ul>
 </div>
 <div class="widget" data-w="abtest"></div>
+
+<div class="box" style="border-left-color:#b7791f"><b class="tag" style="color:#b7791f">Apply it — sizing a conversion A/B test</b>
+Baseline conversion is 5 %; you care about a lift to 5.5 %. (a) Sample size per arm at \(\alpha=0.05\), power 80 %? (b) A hail-damage classifier has recall 85 % and FPR 8 % at 5 % prevalence — precision?
+<details><summary>Show the step-by-step solution</summary><div style="margin-top:8px"><b>1 — (a) plug into the two-proportion formula</b> with \(\bar p=0.0525\): \(n=\dfrac{\big(1.96\sqrt{2(0.0525)(0.9475)}+0.8416\sqrt{0.05(0.95)+0.055(0.945)}\big)^2}{0.005^2}\approx31\,000\) per arm.<br>
+<b>2 — Interpret:</b> detecting a 0.5-point lift on a 5 % base needs ~62k users total — small lifts on small bases are expensive; this is why teams test bigger changes or use variance-reduction (CUPED).<br>
+<b>3 — (b) precision is Bayes:</b> \(\dfrac{0.85\times0.05}{0.85\times0.05+0.08\times0.95}=\dfrac{0.0425}{0.1185}\approx36\,\%\).<br>
+<b>Rule check:</b> both are the same discipline — quantify the base rate before promising performance.</div></details></div>
 
 <h3 id="a10">A10. Simulation and the bootstrap</h3>
 <div class="box">
@@ -948,6 +1124,13 @@ CHECKS.forEach((c,i)=>{
     ICAP.mark('A','selfcheck:'+i);
     if(window.MathJax?.typesetPromise) MathJax.typesetPromise([fb]);
   };
+  // restore a previously answered self-check (so refresh keeps the state)
+  const savedSC=ICAP.get('icap_sc:'+i);
+  if(savedSC){ try{ const o=JSON.parse(savedSC); const r=d.querySelector(`input[name=sc${i}][value="${o.pick}"]`);
+    if(r){ r.checked=true; scoreDone++; if(o.ok) scoreRight++; fb.style.display='block';
+      fb.innerHTML=(o.ok?'<b style="color:#1f8a4c">\u2713 Correct.</b> ':`<b style="color:#c0392b">\u2717 Not quite \u2014 the answer is ${L[c.a]}.</b> `)+c.e+` <span style="color:#6b6b70">(answered ${o.when||'earlier'})</span>`;
+      d.querySelectorAll('input').forEach(x=>x.disabled=true); btn.disabled=true;
+      document.getElementById('scScore').textContent=`Self-checks: ${scoreRight}/${scoreDone} correct`; } }catch(_){} }
   // ---- Constructive + Interactive box after every self-check ----
   const topic=(h.tagName==='H3'?h.innerText:h.innerText.replace(/^\d+\.\s*/,''));
   const cb=document.createElement('div'); cb.className='box construct'; cb.style.borderLeftColor='#0b7a75';
@@ -1006,7 +1189,7 @@ CHECKS.forEach((c,i)=>{
   cb.querySelector('.t3').onclick=()=>ask(`Topic: ${topic}. Play the interviewer: ask me one probing conceptual question on this topic (no numbers needed), wait for my answer, then push back on any weakness in my reasoning. Keep each of your turns short.`, null);
 });
 const sp=document.createElement('div'); sp.id='scScore'; sp.style.cssText='margin-top:14px;padding:6px 10px;border:1px solid #e2e2e6;border-radius:999px;font-size:.85rem;color:#6b6b70';
-sp.textContent='Self-checks: 0/0 correct'; document.querySelector('nav').appendChild(sp);
+sp.textContent=`Self-checks: ${scoreRight}/${scoreDone} correct`; document.querySelector('nav').appendChild(sp);
 // put tools at the top of the sidebar, above the contents list
 (function(){ const nav=document.querySelector('nav'); const nb=document.getElementById('nbBox'), ic=document.getElementById('icapBox');
   const tools=document.createElement('div'); tools.style.cssText='margin:0 0 14px;padding-bottom:10px;border-bottom:2px solid #0b7a75';
