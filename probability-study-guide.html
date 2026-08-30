@@ -1025,10 +1025,10 @@ const CHECKS = [
   e:'SE \\(=\\sqrt{0.1\\times0.9/10000}=0.003\\); 95 % ⇒ ±1.96 × 0.003 ≈ ±0.006. To get ±0.001 you need ~100× more runs.'},
 ];
 const L='ABCD'; let scoreDone=0, scoreRight=0; const TOPICS=[];
-// ---------- 错题本 export ----------
+// ---------- Mistake Log export ----------
 function buildNotebook(){
   const g=k=>(ICAP.get(k)||'').trim(); const today=new Date().toISOString().slice(0,10);
-  let md=`# 错题本 — Probability interview prep\n\nExported ${today} from probability-study-guide.html\n\n`;
+  let md=`# Mistake Log — Probability interview prep\n\nExported ${today} from probability-study-guide.html\n\n`;
   // self-check misses
   const misses=[];
   CHECKS.forEach((c,i)=>{ const r=ICAP.get('icap_sc:'+i); if(!r) return; const o=JSON.parse(r); if(!o.ok) misses.push({i,c,o}); });
@@ -1054,11 +1054,11 @@ function buildNotebook(){
   return md;
 }
 function exportNotebook(){
-  const md=buildNotebook(); const name=`cuotiben-probability-${new Date().toISOString().slice(0,10)}.md`;
+  const md=buildNotebook(); const name=`mistake-log-probability-${new Date().toISOString().slice(0,10)}.md`;
   try{ const blob=new Blob([md],{type:'text/markdown;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }
   catch(e){ alert('Download blocked — use "Copy" instead.'); }
 }
-async function copyNotebook(){ const md=buildNotebook(); try{ await navigator.clipboard.writeText(md); alert('错题本 copied to clipboard ('+md.length+' chars).'); }catch(_){ const ta=document.createElement('textarea'); ta.value=md; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied.'); } }
+async function copyNotebook(){ const md=buildNotebook(); try{ await navigator.clipboard.writeText(md); alert('Mistake Log copied to clipboard ('+md.length+' chars).'); }catch(_){ const ta=document.createElement('textarea'); ta.value=md; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied.'); } }
 // ---------- Page snapshot: the whole guide with all generated content baked in ----------
 function snapshotPage(mode='full'){
   // bake live state into the real DOM first (attributes survive cloning; properties do not)
@@ -1096,23 +1096,23 @@ function snapshotPage(mode='full'){
     prune('H3'); prune('H2');
     // tidy: remove parts of construct boxes that carry no content (empty sub-sections keep their labels otherwise)
     main.querySelectorAll('.construct').forEach(cb=>{ [...cb.querySelectorAll(':scope > div')].forEach(d=>{ if(!d.querySelector('.gq,.gr,textarea') && !d.textContent.trim()) d.remove(); }); });
-    const h1=main.querySelector('h1'); if(h1) h1.textContent='错题本 — Probability interview prep';
+    const h1=main.querySelector('h1'); if(h1) h1.textContent='Mistake Log — Probability interview prep';
     const sub=main.querySelector('h1 + p'); if(sub) sub.remove();
-    const nav=doc.querySelector('nav'); if(nav){ nav.innerHTML='<b>错题本</b>'+[...main.querySelectorAll('h2[id]')].map(h=>`<a href="#${h.id}">${h.textContent}</a>`).join(''); }
+    const nav=doc.querySelector('nav'); if(nav){ nav.innerHTML='<b>Mistake Log</b>'+[...main.querySelectorAll('h2[id]')].map(h=>`<a href="#${h.id}">${h.textContent}</a>`).join(''); }
   }
   // banner + title
   const when=new Date().toISOString().slice(0,16).replace('T',' ');
   const banner=doc.ownerDocument.createElement('div'); banner.style.cssText='background:#fff3cd;border:1px solid #ffe08a;border-radius:8px;padding:10px 14px;margin:0 0 16px;font-size:.9rem';
   const cnt={P:0,A:0,C:0,I:0}; try{ JSON.parse(ICAP.get('icap_done')||'[]').forEach(k=>cnt[k[0]]++); }catch(_){}
   banner.innerHTML= mode==='notebook'
-    ? `<b>📕 错题本 — ${when}</b><br>Only what was generated while studying: self-checks I got wrong (with feedback), AI-generated questions, my answers, AI grading, model answers, my explanations and takeaways — grouped by topic. The guide's own teaching text is omitted. ICAP counts: Passive ${cnt.P} · Active ${cnt.A} · Constructive ${cnt.C} · Interactive ${cnt.I}.`
+    ? `<b>📕 Mistake Log — ${when}</b><br>Only what was generated while studying: self-checks I got wrong (with feedback), AI-generated questions, my answers, AI grading, model answers, my explanations and takeaways — grouped by topic. The guide's own teaching text is omitted. ICAP counts: Passive ${cnt.P} · Active ${cnt.A} · Constructive ${cnt.C} · Interactive ${cnt.I}.`
     : `<b>📸 Study snapshot — ${when}</b><br>Static copy of the study guide with all generated questions, my answers, AI grading, model answers, takeaways and self-check results as they were at export time. ICAP activity counts: Passive ${cnt.P} · Active ${cnt.A} · Constructive ${cnt.C} · Interactive ${cnt.I}.`;
   const main=doc.querySelector('main'); main.insertBefore(banner, main.firstChild);
-  const t=doc.querySelector('title'); if(t) t.textContent=(mode==='notebook'?'错题本 ':'Snapshot ')+when+' — '+t.textContent;
-  const nav2=doc.querySelector('nav'); if(nav2){ const n=doc.ownerDocument.createElement('div'); n.style.cssText='margin-top:10px;font-size:.8rem;color:#b7791f'; n.textContent=(mode==='notebook'?'错题本':'Snapshot')+' (read-only)'; nav2.appendChild(n); }
+  const t=doc.querySelector('title'); if(t) t.textContent=(mode==='notebook'?'Mistake Log ':'Snapshot ')+when+' — '+t.textContent;
+  const nav2=doc.querySelector('nav'); if(nav2){ const n=doc.ownerDocument.createElement('div'); n.style.cssText='margin-top:10px;font-size:.8rem;color:#b7791f'; n.textContent=(mode==='notebook'?'Mistake Log':'Snapshot')+' (read-only)'; nav2.appendChild(n); }
   // MathJax already rendered into CHTML; keep its injected styles (in <head>), no scripts needed
   const html='<!DOCTYPE html>\n'+doc.outerHTML;
-  const name=(mode==='notebook'?'cuotiben-':'study-guide-snapshot-')+new Date().toISOString().slice(0,10)+'.html';
+  const name=(mode==='notebook'?'mistake-log-':'study-guide-snapshot-')+new Date().toISOString().slice(0,10)+'.html';
   try{ const blob=new Blob([html],{type:'text/html;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }
   catch(e){ alert('Download blocked: '+e.message); }
   return html;
@@ -1124,8 +1124,8 @@ function exportState(){ const o={}; const keys=[]; try{ for(let i=0;i<localStora
 function importState(file){ const rd=new FileReader(); rd.onload=()=>{ try{ const j=JSON.parse(rd.result); const d=j.data||j; let n=0; Object.entries(d).forEach(([k,v])=>{ if(k.startsWith('icap_')){ ICAP.set(k,v); n++; } }); alert(`Imported ${n} entries. Reloading…`); location.reload(); }catch(e){ alert('Invalid file: '+e.message); } }; rd.readAsText(file); }
 (function(){ const box=document.createElement('div'); box.id='nbBox'; box.style.cssText='margin-top:14px;padding:8px 10px;border:1px solid #e2e2e6;border-radius:8px;font-size:.82rem';
   const B=(id,txt,solid)=>`<button id="${id}" style="${solid?'background:#0b7a75;color:#fff;border:0':'background:#fff;color:#0b7a75;border:1px solid #0b7a75'};border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.82rem;margin:2px 2px 2px 0">${txt}</button>`;
-  box.innerHTML='<b>错题本 &amp; snapshots</b><div style="color:#6b6b70;margin:2px 0 6px">Generated questions, my answers, AI grading, model answers, takeaways, missed self-checks.</div>'
-    +B('nbSnap','📸 Snapshot page (.html)',true)+B('nbNote','📕 错题本 (.html)',true)+'<div style="margin-top:4px">'+B('nbExport','错题本 as .md',false)+B('nbCopy','Copy .md',false)+'</div>'
+  box.innerHTML='<b>Mistake Log &amp; snapshots</b><div style="color:#6b6b70;margin:2px 0 6px">Generated questions, my answers, AI grading, model answers, takeaways, missed self-checks.</div>'
+    +B('nbSnap','📸 Snapshot page (.html)',true)+B('nbNote','📕 Mistake Log (.html)',true)+'<div style="margin-top:4px">'+B('nbExport','Mistake Log as .md',false)+B('nbCopy','Copy .md',false)+'</div>'
     +'<div style="color:#6b6b70;margin:8px 0 4px">Progress (localStorage):</div>'+B('nbState','Export .json',false)+B('nbImport','Import .json',false)+'<input type="file" id="nbFile" accept=".json" style="display:none">';
   document.querySelector('nav').appendChild(box);
   box.querySelector('#nbSnap').onclick=()=>snapshotPage('full'); box.querySelector('#nbNote').onclick=()=>snapshotPage('notebook'); box.querySelector('#nbExport').onclick=exportNotebook; box.querySelector('#nbCopy').onclick=copyNotebook;
@@ -1185,7 +1185,7 @@ CHECKS.forEach((c,i)=>{
           <button class="g4" style="background:#fff;color:#1c1c1e;border:1px solid #e2e2e6;border-radius:6px;padding:6px 12px;cursor:pointer">Clear</button>
         </div>
         <div class="gr" style="display:none;background:#eef7f0;border-radius:8px;padding:10px 12px;margin-top:8px;white-space:pre-wrap;line-height:1.5"></div>
-        <textarea data-k="note:${c.after}" placeholder="📝 My takeaway for the 错题本: what I got wrong, the rule I must remember…" style="width:100%;min-height:50px;font-family:inherit;font-size:.9rem;padding:8px;border:1px solid #e2e2e6;border-radius:6px;margin-top:8px"></textarea>
+        <textarea data-k="note:${c.after}" placeholder="📝 My takeaway for the Mistake Log: what I got wrong, the rule I must remember…" style="width:100%;min-height:50px;font-family:inherit;font-size:.9rem;padding:8px;border:1px solid #e2e2e6;border-radius:6px;margin-top:8px"></textarea>
       </div></div>`;
   d.parentNode.insertBefore(cb,d.nextSibling);
   const tas=cb.querySelectorAll('textarea'); tas.forEach(t=>{ t.value=ICAP.get('icap_'+t.dataset.k)||''; });
