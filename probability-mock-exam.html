@@ -218,15 +218,31 @@ document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answer
 <script>window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] } };</script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script>
-/* DeepSeek study tutor — shared by probability-study-guide.html and probability-mock-exam.html.
+/* AI study tutor — shared by probability-study-guide.html and probability-mock-exam.html.
    Usage: Tutor.init({ title, system, context: () => string, quick: [{label, prompt: () => string}] })
-   The API key is entered by the user and kept only in this browser's localStorage. */
+   Bring your own API key from any supported provider. Keys are entered by the user and kept only in
+   this browser's localStorage; requests go directly from the browser to the chosen provider's API. */
 (function () {
-  const KEY = 'deepseek_api_key', MODEL_KEY = 'deepseek_model';
-  const ENDPOINT = 'https://api.deepseek.com/chat/completions';
+  const PROVIDERS = {
+    deepseek:   { label: 'DeepSeek',           kind: 'openai',    endpoint: 'https://api.deepseek.com/chat/completions',
+                  models: ['deepseek-chat', 'deepseek-reasoner'], keySite: 'platform.deepseek.com' },
+    openai:     { label: 'OpenAI',             kind: 'openai',    endpoint: 'https://api.openai.com/v1/chat/completions',
+                  models: ['gpt-4o-mini', 'gpt-4o'],              keySite: 'platform.openai.com' },
+    anthropic:  { label: 'Anthropic (Claude)', kind: 'anthropic', endpoint: 'https://api.anthropic.com/v1/messages',
+                  models: ['claude-opus-5', 'claude-haiku-4-5'],  keySite: 'console.anthropic.com' },
+    gemini:     { label: 'Google Gemini',      kind: 'openai',    endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                  models: ['gemini-2.5-flash', 'gemini-2.5-pro'], keySite: 'aistudio.google.com' },
+    openrouter: { label: 'OpenRouter (many models)', kind: 'openai', endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+                  models: ['deepseek/deepseek-chat', 'openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5'], keySite: 'openrouter.ai' },
+  };
   const mem = {};
   const store = { get(k){ try { return localStorage.getItem(k); } catch(_) { return mem[k] ?? null; } },
                   set(k,v){ try { localStorage.setItem(k,v); } catch(_) { mem[k]=v; } } };
+  // Migrate settings from the old DeepSeek-only tutor.
+  if (!store.get('tutor_key_deepseek') && store.get('deepseek_api_key')) {
+    store.set('tutor_key_deepseek', store.get('deepseek_api_key'));
+    if (store.get('deepseek_model')) store.set('tutor_model_deepseek', store.get('deepseek_model'));
+  }
   const css = `
   #dsFab{position:fixed;right:22px;bottom:22px;z-index:50;background:#7b3fe4;color:#fff;border:0;border-radius:999px;padding:12px 18px;font-size:.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)}
   #dsPanel{position:fixed;right:22px;bottom:76px;width:min(440px,calc(100vw - 44px));height:min(640px,calc(100vh - 110px));z-index:50;background:#fff;border:1px solid #e2e2e6;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:none;flex-direction:column;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1c1c1e;font-size:.92rem}
@@ -255,12 +271,44 @@ document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answer
     #dsPanel{left:8px;right:8px;bottom:8px;width:auto;height:calc(100vh - 60px);height:calc(100dvh - 60px)}
     #dsSettings input,#dsSettings select,#dsInput textarea{font-size:16px}
   }`;
+  const providerId = () => PROVIDERS[store.get('tutor_provider')] ? store.get('tutor_provider') : 'deepseek';
+  const cfg = () => { const id = providerId(), P = PROVIDERS[id];
+    return { id, P, key: (store.get('tutor_key_' + id) || '').trim(), model: (store.get('tutor_model_' + id) || '').trim() || P.models[0] }; };
+
+  // One streamed chat completion; calls onDelta(fullTextSoFar) as tokens arrive, returns the full text; throws on failure.
+  async function chat(messages, temperature, onDelta) {
+    const { P, key, model } = cfg();
+    let r, parse;
+    if (P.kind === 'anthropic') {
+      const system = messages[0]?.role === 'system' ? messages[0].content : undefined;
+      r = await fetch(P.endpoint, { method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model, max_tokens: 4096, stream: true, ...(system ? { system } : {}), messages: messages.filter(m => m.role !== 'system') }) });
+      parse = d => { const e = JSON.parse(d); return (e.type === 'content_block_delta' && e.delta?.type === 'text_delta') ? e.delta.text : ''; };
+    } else {
+      r = await fetch(P.endpoint, { method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({ model, messages, stream: true, temperature }) });
+      parse = d => JSON.parse(d).choices?.[0]?.delta?.content || '';
+    }
+    if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 300)}`);
+    const reader = r.body.getReader(), dec = new TextDecoder(); let buf = '', full = '';
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop();
+      for (const ln of lines) {
+        if (!ln.startsWith('data:')) continue; const d = ln.slice(5).trim(); if (!d || d === '[DONE]') continue;
+        try { const t = parse(d); if (t) { full += t; onDelta(full); } } catch (_) {}
+      }
+    }
+    return full;
+  }
 
   function md(s) { // minimal markdown -> html (code, bold, italics); keep LaTeX intact
     const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    const blocks = []; s = s.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, c) => { blocks.push('<pre>' + esc(c) + '</pre>'); return ' ' + (blocks.length - 1) + ' '; });
+    const blocks = []; s = s.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, c) => { blocks.push('<pre>' + esc(c) + '</pre>'); return ' ' + (blocks.length - 1) + ' '; });
     s = esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/^#{1,4}\s*(.+)$/gm, '<b>$1</b>').replace(/^\s*[-*]\s+/gm, '• ');
-    return s.replace(/ (\d+) /g, (_, i) => blocks[i]);
+    return s.replace(/ (\d+) /g, (_, i) => blocks[i]);
   }
 
   const Tutor = {
@@ -269,22 +317,33 @@ document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answer
       const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
       const fab = document.createElement('button'); fab.id = 'dsFab'; fab.textContent = '🎓 Ask tutor'; document.body.appendChild(fab);
       const p = document.createElement('div'); p.id = 'dsPanel';
-      p.innerHTML = `<header><b>${opts.title || 'DeepSeek tutor'}</b><button id="dsGear" title="API key & model">⚙ Key</button><button id="dsClear">Clear</button><button id="dsClose">✕</button></header>
+      p.innerHTML = `<header><b>${opts.title || 'AI tutor'}</b><button id="dsGear" title="Provider, API key & model">⚙ Setup</button><button id="dsClear">Clear</button><button id="dsClose">✕</button></header>
         <div id="dsSettings">
-          <label>DeepSeek API key <input id="dsKey" type="password" placeholder="sk-..." autocomplete="off"></label>
-          <label>Model <select id="dsModel"><option value="deepseek-chat">deepseek-chat (fast)</option><option value="deepseek-reasoner">deepseek-reasoner (step-by-step, slower)</option></select></label>
-          <small>Stored only in this browser (localStorage) and sent only to api.deepseek.com. Get a key at platform.deepseek.com. If the browser blocks the request (CORS) when opened as a local file, serve the folder with <code>python -m http.server</code> and open via http://localhost:8000.</small>
+          <label>Provider <select id="dsProvider">${Object.entries(PROVIDERS).map(([id, P]) => `<option value="${id}">${P.label}</option>`).join('')}</select></label>
+          <label>API key <input id="dsKey" type="password" placeholder="paste your API key" autocomplete="off"></label>
+          <label>Model <input id="dsModel" list="dsModelList" autocomplete="off"><datalist id="dsModelList"></datalist></label>
+          <small id="dsNote"></small>
         </div>
         <div class="row" id="dsQuick"></div>
         <div id="dsMsgs"></div>
         <div id="dsInput"><textarea id="dsText" placeholder="Ask anything about this page… (Enter to send, Shift+Enter for newline)"></textarea><button id="dsSend">Send</button></div>`;
       document.body.appendChild(p);
       const $ = id => document.getElementById(id);
-      $('dsKey').value = store.get(KEY) || '';
-      $('dsModel').value = store.get(MODEL_KEY) || 'deepseek-chat';
-      $('dsKey').oninput = e => store.set(KEY, e.target.value.trim());
-      $('dsModel').onchange = e => store.set(MODEL_KEY, e.target.value);
-      fab.onclick = () => { p.classList.toggle('open'); if (!store.get(KEY)) $('dsSettings').classList.add('open'); };
+      const syncSettings = () => {
+        const { id, P } = cfg();
+        $('dsProvider').value = id;
+        $('dsKey').value = store.get('tutor_key_' + id) || '';
+        $('dsModel').value = store.get('tutor_model_' + id) || '';
+        $('dsModel').placeholder = P.models[0] + ' (default)';
+        $('dsModelList').innerHTML = P.models.map(m => `<option value="${m}">`).join('');
+        const host = new URL(P.endpoint).host;
+        $('dsNote').innerHTML = `Your key is stored only in this browser (localStorage) and sent only to ${host}. Get one at ${P.keySite}. Pick a suggested model or type any model ID ${P.label} supports. If the browser blocks the request (CORS) when opened as a local file, serve the folder with <code>python -m http.server</code> and open via http://localhost:8000.`;
+      };
+      syncSettings();
+      $('dsProvider').onchange = e => { store.set('tutor_provider', e.target.value); syncSettings(); };
+      $('dsKey').oninput = e => store.set('tutor_key_' + providerId(), e.target.value.trim());
+      $('dsModel').oninput = e => store.set('tutor_model_' + providerId(), e.target.value.trim());
+      fab.onclick = () => { p.classList.toggle('open'); if (!cfg().key) $('dsSettings').classList.add('open'); };
       $('dsClose').onclick = () => p.classList.remove('open');
       $('dsGear').onclick = () => $('dsSettings').classList.toggle('open');
       $('dsClear').onclick = () => { this.history = []; $('dsMsgs').innerHTML = ''; };
@@ -296,28 +355,27 @@ document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answer
       const m = document.createElement('div'); m.className = 'dsM ' + role; m.innerHTML = md(text);
       const box = document.getElementById('dsMsgs'); box.appendChild(m); box.scrollTop = box.scrollHeight; return m;
     },
+    // Stream a completion into any element; returns the full text. Used by inline widgets.
+    async stream(messages, el) {
+      if (!cfg().key) { document.getElementById('dsPanel').classList.add('open'); document.getElementById('dsSettings').classList.add('open'); el.innerHTML = `<span style="color:#c0392b">Enter your ${cfg().P.label} API key first (🎓 Ask tutor → ⚙ Setup).</span>`; return null; }
+      el.innerHTML = '<span style="color:#6b6b70">… thinking</span>';
+      try {
+        const full = await chat(messages, 0.4, t => { el.innerHTML = md(t); });
+        el.innerHTML = md(full || '(empty response)');
+        if (window.MathJax?.typesetPromise) MathJax.typesetPromise([el]).catch(() => {});
+        return full;
+      } catch (err) { el.innerHTML = '<span style="color:#c0392b">Request failed: ' + err.message + '</span>'; return null; }
+    },
     async send(text, label) {
-      const key = store.get(KEY);
-      if (!key) { document.getElementById('dsSettings').classList.add('open'); this.add('e', 'Enter your DeepSeek API key first (⚙ Key).'); return; }
+      window.ICAP?.mark('I','chat:'+(label||text.slice(0,30)));
+      if (!cfg().key) { document.getElementById('dsSettings').classList.add('open'); this.add('e', `Enter your ${cfg().P.label} API key first (⚙ Setup).`); return; }
       this.add('u', label ? `[${label}]` : text);
       const ctx = (this.opts.context && this.opts.context()) || '';
       const messages = [{ role: 'system', content: this.opts.system + (ctx ? '\n\n--- CURRENT PAGE CONTEXT ---\n' + ctx.slice(0, 12000) : '') },
         ...this.history.slice(-10), { role: 'user', content: text }];
       const out = this.add('a', '…'); const btn = document.getElementById('dsSend'); btn.disabled = true;
-      let full = '';
       try {
-        const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-          body: JSON.stringify({ model: store.get(MODEL_KEY) || 'deepseek-chat', messages, stream: true, temperature: 0.3 }) });
-        if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 300)}`);
-        const reader = r.body.getReader(), dec = new TextDecoder(); let buf = '';
-        while (true) {
-          const { value, done } = await reader.read(); if (done) break;
-          buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop();
-          for (const ln of lines) {
-            if (!ln.startsWith('data:')) continue; const d = ln.slice(5).trim(); if (d === '[DONE]') continue;
-            try { const delta = JSON.parse(d).choices?.[0]?.delta?.content; if (delta) { full += delta; out.innerHTML = md(full); out.parentNode.scrollTop = out.parentNode.scrollHeight; } } catch (_) {}
-          }
-        }
+        let full = await chat(messages, 0.3, t => { out.innerHTML = md(t); out.parentNode.scrollTop = out.parentNode.scrollHeight; });
         if (!full) full = '(empty response)';
         out.innerHTML = md(full);
         this.history.push({ role: 'user', content: text }, { role: 'assistant', content: full });
@@ -342,7 +400,7 @@ function examContext(){
   return c;
 }
 Tutor.init({
-  title:'DeepSeek exam tutor',
+  title:'AI exam tutor',
   system:`You are a probability tutor for data-science interview prep. Use LaTeX \\( \\) / \\[ \\] for math. BEFORE the exam is submitted you must not reveal or hint at answers — only clarify wording. AFTER submission: interpret the results (weak topics, patterns, confidence calibration), then for each wrong question explain the correct reasoning step by step, and suggest what to review.`,
   context: examContext,
   quick:[
