@@ -28,13 +28,31 @@
   code { background:var(--code); padding:1px 4px; border-radius:4px; }
   .muted { color:var(--muted); }
   details { margin:8px 0; } summary { cursor:pointer; color:var(--accent); }
-  @media (max-width: 820px) { .wrap { grid-template-columns:1fr; } nav { position:static; height:auto; border-right:0; border-bottom:1px solid var(--line); } main { padding:20px; } }
-  @media print { nav { display:none; } .wrap { display:block; } }
+  mjx-container { max-width:100%; overflow-x:auto; overflow-y:hidden; }
+  main { overflow-wrap:break-word; }
+  [id] { scroll-margin-top:70px; }
+  .topbar { display:none; }
+  @media (max-width: 820px) {
+    .wrap { display:block; }
+    .topbar { display:flex; position:sticky; top:0; z-index:20; align-items:center; gap:10px; background:var(--card); border-bottom:1px solid var(--line); padding:10px 14px; }
+    .topbar b { font-size:1rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar button { background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px 14px; font-size:.95rem; cursor:pointer; }
+    nav { display:none; position:sticky; top:49px; z-index:19; height:auto; max-height:calc(100vh - 49px); max-height:calc(100dvh - 49px); overflow:auto; border-right:0; border-bottom:1px solid var(--line); box-shadow:0 10px 20px rgba(0,0,0,.12); }
+    nav.open { display:block; }
+    nav a { padding:8px 0; border-bottom:1px solid #f0f0f3; }
+    main { padding:16px 14px 70px; }
+    h2 { margin-top:34px; }
+    main table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    input[type=text], input[type=number], input[type=password], select, textarea { font-size:16px !important; }
+    button { min-height:40px; }
+  }
+  @media print { nav, .topbar { display:none; } .wrap { display:block; } }
 </style>
 </head>
 <body>
+<div class="topbar"><button id="navToggle" aria-expanded="false" aria-controls="toc">☰ Contents</button><b>Probability Study Guide</b></div>
 <div class="wrap">
-<nav>
+<nav id="toc">
   <b>Contents</b>
   <a href="#s0">0. How to use this guide</a>
   <a href="#s1">1. Foundations</a>
@@ -897,6 +915,14 @@ Attempt each within 5 minutes on paper, then paste your reasoning into the const
 </main>
 </div>
 <script>
+// ---------- Mobile TOC toggle ----------
+(function(){
+  const btn=document.getElementById('navToggle'), nav=document.getElementById('toc');
+  if(!btn||!nav) return;
+  const close=()=>{ nav.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.onclick=()=>{ const open=nav.classList.toggle('open'); btn.setAttribute('aria-expanded',open); };
+  nav.addEventListener('click',e=>{ if(e.target.closest('a[href^="#"]')) close(); });
+})();
 // ---------- ICAP progress tracker ----------
 window.ICAP=(function(){
   const mem={}; const get=k=>{try{return localStorage.getItem(k);}catch(_){return mem[k]??null;}}; const set=(k,v)=>{try{localStorage.setItem(k,v);}catch(_){mem[k]=v;}};
@@ -999,10 +1025,10 @@ const CHECKS = [
   e:'SE \\(=\\sqrt{0.1\\times0.9/10000}=0.003\\); 95 % ⇒ ±1.96 × 0.003 ≈ ±0.006. To get ±0.001 you need ~100× more runs.'},
 ];
 const L='ABCD'; let scoreDone=0, scoreRight=0; const TOPICS=[];
-// ---------- 错题本 export ----------
+// ---------- Mistake Log export ----------
 function buildNotebook(){
   const g=k=>(ICAP.get(k)||'').trim(); const today=new Date().toISOString().slice(0,10);
-  let md=`# 错题本 — Probability interview prep\n\nExported ${today} from probability-study-guide.html\n\n`;
+  let md=`# Mistake Log — Probability interview prep\n\nExported ${today} from probability-study-guide.html\n\n`;
   // self-check misses
   const misses=[];
   CHECKS.forEach((c,i)=>{ const r=ICAP.get('icap_sc:'+i); if(!r) return; const o=JSON.parse(r); if(!o.ok) misses.push({i,c,o}); });
@@ -1028,11 +1054,11 @@ function buildNotebook(){
   return md;
 }
 function exportNotebook(){
-  const md=buildNotebook(); const name=`cuotiben-probability-${new Date().toISOString().slice(0,10)}.md`;
+  const md=buildNotebook(); const name=`mistake-log-probability-${new Date().toISOString().slice(0,10)}.md`;
   try{ const blob=new Blob([md],{type:'text/markdown;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }
   catch(e){ alert('Download blocked — use "Copy" instead.'); }
 }
-async function copyNotebook(){ const md=buildNotebook(); try{ await navigator.clipboard.writeText(md); alert('错题本 copied to clipboard ('+md.length+' chars).'); }catch(_){ const ta=document.createElement('textarea'); ta.value=md; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied.'); } }
+async function copyNotebook(){ const md=buildNotebook(); try{ await navigator.clipboard.writeText(md); alert('Mistake Log copied to clipboard ('+md.length+' chars).'); }catch(_){ const ta=document.createElement('textarea'); ta.value=md; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied.'); } }
 // ---------- Page snapshot: the whole guide with all generated content baked in ----------
 function snapshotPage(mode='full'){
   // bake live state into the real DOM first (attributes survive cloning; properties do not)
@@ -1070,23 +1096,23 @@ function snapshotPage(mode='full'){
     prune('H3'); prune('H2');
     // tidy: remove parts of construct boxes that carry no content (empty sub-sections keep their labels otherwise)
     main.querySelectorAll('.construct').forEach(cb=>{ [...cb.querySelectorAll(':scope > div')].forEach(d=>{ if(!d.querySelector('.gq,.gr,textarea') && !d.textContent.trim()) d.remove(); }); });
-    const h1=main.querySelector('h1'); if(h1) h1.textContent='错题本 — Probability interview prep';
+    const h1=main.querySelector('h1'); if(h1) h1.textContent='Mistake Log — Probability interview prep';
     const sub=main.querySelector('h1 + p'); if(sub) sub.remove();
-    const nav=doc.querySelector('nav'); if(nav){ nav.innerHTML='<b>错题本</b>'+[...main.querySelectorAll('h2[id]')].map(h=>`<a href="#${h.id}">${h.textContent}</a>`).join(''); }
+    const nav=doc.querySelector('nav'); if(nav){ nav.innerHTML='<b>Mistake Log</b>'+[...main.querySelectorAll('h2[id]')].map(h=>`<a href="#${h.id}">${h.textContent}</a>`).join(''); }
   }
   // banner + title
   const when=new Date().toISOString().slice(0,16).replace('T',' ');
   const banner=doc.ownerDocument.createElement('div'); banner.style.cssText='background:#fff3cd;border:1px solid #ffe08a;border-radius:8px;padding:10px 14px;margin:0 0 16px;font-size:.9rem';
   const cnt={P:0,A:0,C:0,I:0}; try{ JSON.parse(ICAP.get('icap_done')||'[]').forEach(k=>cnt[k[0]]++); }catch(_){}
   banner.innerHTML= mode==='notebook'
-    ? `<b>📕 错题本 — ${when}</b><br>Only what was generated while studying: self-checks I got wrong (with feedback), AI-generated questions, my answers, AI grading, model answers, my explanations and takeaways — grouped by topic. The guide's own teaching text is omitted. ICAP counts: Passive ${cnt.P} · Active ${cnt.A} · Constructive ${cnt.C} · Interactive ${cnt.I}.`
+    ? `<b>📕 Mistake Log — ${when}</b><br>Only what was generated while studying: self-checks I got wrong (with feedback), AI-generated questions, my answers, AI grading, model answers, my explanations and takeaways — grouped by topic. The guide's own teaching text is omitted. ICAP counts: Passive ${cnt.P} · Active ${cnt.A} · Constructive ${cnt.C} · Interactive ${cnt.I}.`
     : `<b>📸 Study snapshot — ${when}</b><br>Static copy of the study guide with all generated questions, my answers, AI grading, model answers, takeaways and self-check results as they were at export time. ICAP activity counts: Passive ${cnt.P} · Active ${cnt.A} · Constructive ${cnt.C} · Interactive ${cnt.I}.`;
   const main=doc.querySelector('main'); main.insertBefore(banner, main.firstChild);
-  const t=doc.querySelector('title'); if(t) t.textContent=(mode==='notebook'?'错题本 ':'Snapshot ')+when+' — '+t.textContent;
-  const nav2=doc.querySelector('nav'); if(nav2){ const n=doc.ownerDocument.createElement('div'); n.style.cssText='margin-top:10px;font-size:.8rem;color:#b7791f'; n.textContent=(mode==='notebook'?'错题本':'Snapshot')+' (read-only)'; nav2.appendChild(n); }
+  const t=doc.querySelector('title'); if(t) t.textContent=(mode==='notebook'?'Mistake Log ':'Snapshot ')+when+' — '+t.textContent;
+  const nav2=doc.querySelector('nav'); if(nav2){ const n=doc.ownerDocument.createElement('div'); n.style.cssText='margin-top:10px;font-size:.8rem;color:#b7791f'; n.textContent=(mode==='notebook'?'Mistake Log':'Snapshot')+' (read-only)'; nav2.appendChild(n); }
   // MathJax already rendered into CHTML; keep its injected styles (in <head>), no scripts needed
   const html='<!DOCTYPE html>\n'+doc.outerHTML;
-  const name=(mode==='notebook'?'cuotiben-':'study-guide-snapshot-')+new Date().toISOString().slice(0,10)+'.html';
+  const name=(mode==='notebook'?'mistake-log-':'study-guide-snapshot-')+new Date().toISOString().slice(0,10)+'.html';
   try{ const blob=new Blob([html],{type:'text/html;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }
   catch(e){ alert('Download blocked: '+e.message); }
   return html;
@@ -1098,8 +1124,8 @@ function exportState(){ const o={}; const keys=[]; try{ for(let i=0;i<localStora
 function importState(file){ const rd=new FileReader(); rd.onload=()=>{ try{ const j=JSON.parse(rd.result); const d=j.data||j; let n=0; Object.entries(d).forEach(([k,v])=>{ if(k.startsWith('icap_')){ ICAP.set(k,v); n++; } }); alert(`Imported ${n} entries. Reloading…`); location.reload(); }catch(e){ alert('Invalid file: '+e.message); } }; rd.readAsText(file); }
 (function(){ const box=document.createElement('div'); box.id='nbBox'; box.style.cssText='margin-top:14px;padding:8px 10px;border:1px solid #e2e2e6;border-radius:8px;font-size:.82rem';
   const B=(id,txt,solid)=>`<button id="${id}" style="${solid?'background:#0b7a75;color:#fff;border:0':'background:#fff;color:#0b7a75;border:1px solid #0b7a75'};border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.82rem;margin:2px 2px 2px 0">${txt}</button>`;
-  box.innerHTML='<b>错题本 &amp; snapshots</b><div style="color:#6b6b70;margin:2px 0 6px">Generated questions, my answers, AI grading, model answers, takeaways, missed self-checks.</div>'
-    +B('nbSnap','📸 Snapshot page (.html)',true)+B('nbNote','📕 错题本 (.html)',true)+'<div style="margin-top:4px">'+B('nbExport','错题本 as .md',false)+B('nbCopy','Copy .md',false)+'</div>'
+  box.innerHTML='<b>Mistake Log &amp; snapshots</b><div style="color:#6b6b70;margin:2px 0 6px">Generated questions, my answers, AI grading, model answers, takeaways, missed self-checks.</div>'
+    +B('nbSnap','📸 Snapshot page (.html)',true)+B('nbNote','📕 Mistake Log (.html)',true)+'<div style="margin-top:4px">'+B('nbExport','Mistake Log as .md',false)+B('nbCopy','Copy .md',false)+'</div>'
     +'<div style="color:#6b6b70;margin:8px 0 4px">Progress (localStorage):</div>'+B('nbState','Export .json',false)+B('nbImport','Import .json',false)+'<input type="file" id="nbFile" accept=".json" style="display:none">';
   document.querySelector('nav').appendChild(box);
   box.querySelector('#nbSnap').onclick=()=>snapshotPage('full'); box.querySelector('#nbNote').onclick=()=>snapshotPage('notebook'); box.querySelector('#nbExport').onclick=exportNotebook; box.querySelector('#nbCopy').onclick=copyNotebook;
@@ -1159,7 +1185,7 @@ CHECKS.forEach((c,i)=>{
           <button class="g4" style="background:#fff;color:#1c1c1e;border:1px solid #e2e2e6;border-radius:6px;padding:6px 12px;cursor:pointer">Clear</button>
         </div>
         <div class="gr" style="display:none;background:#eef7f0;border-radius:8px;padding:10px 12px;margin-top:8px;white-space:pre-wrap;line-height:1.5"></div>
-        <textarea data-k="note:${c.after}" placeholder="📝 My takeaway for the 错题本: what I got wrong, the rule I must remember…" style="width:100%;min-height:50px;font-family:inherit;font-size:.9rem;padding:8px;border:1px solid #e2e2e6;border-radius:6px;margin-top:8px"></textarea>
+        <textarea data-k="note:${c.after}" placeholder="📝 My takeaway for the Mistake Log: what I got wrong, the rule I must remember…" style="width:100%;min-height:50px;font-family:inherit;font-size:.9rem;padding:8px;border:1px solid #e2e2e6;border-radius:6px;margin-top:8px"></textarea>
       </div></div>`;
   d.parentNode.insertBefore(cb,d.nextSibling);
   const tas=cb.querySelectorAll('textarea'); tas.forEach(t=>{ t.value=ICAP.get('icap_'+t.dataset.k)||''; });
@@ -1204,7 +1230,7 @@ const WCSS=`.widget{background:#fff;border:1px solid #e2e2e6;border-left:4px sol
 .widget .ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 18px;margin:8px 0;font-size:.9rem}
 .widget label{display:flex;flex-direction:column;gap:2px}
 .widget input[type=range]{width:100%}
-.widget canvas{max-width:100%;background:#fafafc;border:1px solid #eee;border-radius:6px;display:block;margin:8px 0}
+.widget canvas{max-width:100%;height:auto;background:#fafafc;border:1px solid #eee;border-radius:6px;display:block;margin:8px 0}
 .widget .out{font-size:.95rem;margin-top:6px}
 .widget .out b{color:#d9480f}
 .widget button{background:#d9480f;color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer;margin:4px 6px 4px 0}
@@ -1437,7 +1463,12 @@ document.querySelectorAll('.widget[data-w]').forEach(w=>{ try{ W[w.dataset.w](w)
   #dsInput{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #e2e2e6}
   #dsInput textarea{flex:1;resize:none;height:58px;padding:8px;border:1px solid #e2e2e6;border-radius:8px;font-family:inherit;font-size:.9rem}
   #dsInput button{background:#7b3fe4;color:#fff;border:0;border-radius:8px;padding:0 14px;cursor:pointer}
-  #dsInput button:disabled{opacity:.5}`;
+  #dsInput button:disabled{opacity:.5}
+  @media (max-width:600px){
+    #dsFab{right:14px;bottom:14px;padding:12px 16px}
+    #dsPanel{left:8px;right:8px;bottom:8px;width:auto;height:calc(100vh - 60px);height:calc(100dvh - 60px)}
+    #dsSettings input,#dsSettings select,#dsInput textarea{font-size:16px}
+  }`;
 
   function md(s) { // minimal markdown -> html (code, bold, italics); keep LaTeX intact
     const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');

@@ -34,6 +34,21 @@
   td.ok { color:var(--ok); font-weight:600; } td.bad { color:var(--bad); font-weight:600; }
   textarea { width:100%; min-height:320px; font-family:ui-monospace, Consolas, monospace; font-size:.85rem; padding:10px; border:1px solid var(--line); border-radius:8px; }
   .hidden { display:none; }
+  mjx-container { max-width:100%; overflow-x:auto; overflow-y:hidden; }
+  main { overflow-wrap:break-word; }
+  @media (max-width:600px) {
+    header { padding:8px 12px; gap:8px; }
+    header h1 { font-size:.95rem; flex-basis:100%; }
+    .pill { font-size:.85rem; padding:3px 10px; }
+    main { padding:12px; }
+    .intro, .q { padding:12px 14px; }
+    .opt { padding:10px 8px; gap:12px; }
+    .opt input { width:18px; height:18px; flex-shrink:0; }
+    .conf select { font-size:16px; padding:4px 6px; }
+    .actions button { flex:1; min-height:44px; }
+    textarea { min-height:220px; font-size:16px; }
+    table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  }
 </style>
 </head>
 <body>
@@ -234,7 +249,12 @@ document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answer
   #dsInput{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #e2e2e6}
   #dsInput textarea{flex:1;resize:none;height:58px;padding:8px;border:1px solid #e2e2e6;border-radius:8px;font-family:inherit;font-size:.9rem}
   #dsInput button{background:#7b3fe4;color:#fff;border:0;border-radius:8px;padding:0 14px;cursor:pointer}
-  #dsInput button:disabled{opacity:.5}`;
+  #dsInput button:disabled{opacity:.5}
+  @media (max-width:600px){
+    #dsFab{right:14px;bottom:14px;padding:12px 16px}
+    #dsPanel{left:8px;right:8px;bottom:8px;width:auto;height:calc(100vh - 60px);height:calc(100dvh - 60px)}
+    #dsSettings input,#dsSettings select,#dsInput textarea{font-size:16px}
+  }`;
 
   function md(s) { // minimal markdown -> html (code, bold, italics); keep LaTeX intact
     const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');

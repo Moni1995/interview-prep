@@ -11,7 +11,7 @@ that never leaves your own browser's localStorage.
 
 ## Folder layout
 - `probability-study-guide.html` — interactive study guide (Part I fundamentals + Part II advanced,
-  ICAP ladder, explorers/simulators, self-checks, DeepSeek tutor, 错题本/snapshot export).
+  ICAP ladder, explorers/simulators, self-checks, DeepSeek tutor, Mistake Log/snapshot export).
 - `probability-mock-exam.html` — 40-question timed mock exam with copyable results report.
 - `index.html` — landing page.
 - `evaluations/`, `practice/`, `results/` — personal study data; kept local only
@@ -34,11 +34,11 @@ then open http://localhost:8000/probability-study-guide.html
   `python -m http.server` in this folder and open http://localhost:8000/.
 - The study guide also has a self-check question after every topic (answers hidden until "Check").
 
-## 错题本 (mistake notebook) export
-In the study guide sidebar: **📕 错题本 (.html)** downloads `cuotiben-<date>.html` — built like the
+## Mistake Log (错题本, "mistake notebook") export
+In the study guide sidebar: **📕 Mistake Log (.html)** downloads `mistake-log-<date>.html` — built like the
 page snapshot (same styling, rendered math, grouped under topic headings) but with the guide's own
 teaching text removed, so only what was generated while studying remains. A plain Markdown version
-(`错题本 as .md` / `Copy .md`) is also available. Both contain, per topic: AI-generated questions, your
+(`Mistake Log as .md` / `Copy .md`) is also available. Both contain, per topic: AI-generated questions, your
 answers, the AI grading/explanations, model answers, your own explanation and interview question,
 and your "takeaway" note — plus every self-check you got wrong (question, your pick, correct
 answer, explanation). All of this is stored in the browser's localStorage, so export it
