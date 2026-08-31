@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src https://api.deepseek.com https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://openrouter.ai; object-src 'none'; base-uri 'none'">
 <title>Probability for Data Science — Study Guide</title>
 <style>
   :root { --bg:#f7f7f9; --card:#fff; --ink:#1c1c1e; --muted:#6b6b70; --accent:#2b5bd7; --warn:#b7791f; --line:#e2e2e6; --code:#f1f3f8; }
@@ -97,7 +98,7 @@
 
 <main>
 <h1>Probability for Data Science — Study Guide</h1>
-<p class="muted">Built from Analytics Vidhya's <em>Basics of Probability for Data Science</em> (Feb 2017) and <em>Conditional Probability &amp; Bayes Theorem</em> (Mar 2017), extended with the material needed for the 40-question mock exam and typical data-science interview questions. Equations are rendered with MathJax (needs internet; otherwise raw LaTeX is shown).</p>
+<p class="muted">Built from Analytics Vidhya's <em>Basics of Probability for Data Science</em> (Feb 2017) and <em>Conditional Probability &amp; Bayes Theorem</em> (Mar 2017), extended with the material needed for the 40-question mock exam and typical data-science interview questions. Equations are rendered with MathJax, bundled locally with the site — no internet connection needed.</p>
 
 <h2 id="s0">0. How to use this guide — the ICAP ladder</h2>
 <p>This guide is organised around the <b>ICAP framework</b> (Chi &amp; Wylie, 2014): learning deepens as you move from <b>P</b>assive → <b>A</b>ctive → <b>C</b>onstructive → <b>I</b>nteractive engagement. Every topic offers all four rungs — climb them in order.</p>
@@ -1584,7 +1585,7 @@ document.querySelectorAll('.widget[data-w]').forEach(w=>{ try{ W[w.dataset.w](w)
 
 </script>
 <script>window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] } };</script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script async src="vendor/mathjax/tex-mml-chtml.js"></script>
 <script>
 /* AI study tutor — shared by probability-study-guide.html and probability-mock-exam.html.
    Usage: Tutor.init({ title, system, context: () => string, quick: [{label, prompt: () => string}] })

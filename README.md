@@ -5,11 +5,18 @@ probability: an ICAP-structured study guide (fundamentals + advanced) with
 explorers, simulators, self-checks and an optional LLM tutor, plus a
 40-question timed mock exam.
 
-Live site: deployed via Cloudflare Pages. Built with plain HTML/JS (MathJax for
-equations); the optional AI tutor is bring-your-own-key (several providers
+Live site: deployed via Cloudflare Pages. Built with plain HTML/JS. MathJax is
+bundled locally (`vendor/mathjax/`), so equations render with no internet
+connection. The optional AI tutor is bring-your-own-key (several providers
 supported) and the key never leaves your own browser's localStorage.
 
+Security note: each page sets a Content-Security-Policy that blocks all
+third-party scripts and restricts network calls to the five supported AI
+providers. Still, the tutor key sits in localStorage — use a low-value,
+spending-capped API key, and remove it (⚙ Setup) on shared machines.
+
 ## Folder layout
+- `vendor/mathjax/` — bundled MathJax build + fonts (keeps the site fully offline-capable).
 - `probability-study-guide.html` — interactive study guide (Part I fundamentals + Part II advanced,
   ICAP ladder, explorers/simulators, self-checks, AI tutor, Mistake Log/snapshot export).
 - `probability-mock-exam.html` — 40-question timed mock exam with copyable results report.

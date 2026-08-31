@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.analyticsvidhya.com; font-src 'self'; connect-src https://api.deepseek.com https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://openrouter.ai; object-src 'none'; base-uri 'none'">
 <title>Probability Mock Exam (40 Q)</title>
 <style>
   :root { --bg:#f7f7f9; --card:#fff; --ink:#1c1c1e; --muted:#6b6b70; --accent:#2b5bd7; --ok:#1f8a4c; --bad:#c0392b; --line:#e2e2e6; }
@@ -34,6 +35,7 @@
   td.ok { color:var(--ok); font-weight:600; } td.bad { color:var(--bad); font-weight:600; }
   textarea { width:100%; min-height:320px; font-family:ui-monospace, Consolas, monospace; font-size:.85rem; padding:10px; border:1px solid var(--line); border-radius:8px; }
   .hidden { display:none; }
+  #results, .q { scroll-margin-top:90px; }
   mjx-container { max-width:100%; overflow-x:auto; overflow-y:hidden; }
   main { overflow-wrap:break-word; }
   @media (max-width:600px) {
@@ -63,7 +65,7 @@
     Answer every question, optionally mark your confidence, then click <em>Submit</em>. Answers are not shown during the exam.
     After submitting, a results report is generated — copy it and paste it to Claude for interpretation.
     Use the <em>Reveal correct answers</em> toggle only if you want to see them.<br>
-    <span class="note">Suggested time: 60 minutes. No calculator restriction. Equations are rendered with MathJax (loaded from the web; without internet they show as raw LaTeX).</span>
+    <span class="note">Suggested time: 60 minutes. No calculator restriction. Equations are rendered with MathJax, bundled locally — no internet needed.</span>
   </div>
 
   <div id="quiz"></div>
@@ -107,7 +109,7 @@ const Q = [
  {t:'Suppose a life insurance company sells a $240,000 one-year term life insurance policy to a 25-year-old female for $210. The probability that the female survives the year is 0.999592. Find the expected value of this policy for the insurance company.', o:['$131','$140','$112','$125'], k:'Expectation'},
  {t:'For events \\(A, B, C\\) with the relevant conditioning events having positive probability, is the following identity true?\n\\[ P(A \\cap B \\cap C^{c}) = P(A)\\, P(C^{c} \\mid A)\\, P(B \\mid A \\cap C^{c}) \\]', o:['True','False'], k:'Conditional probability'},
  {t:'When is an event A independent of itself?', o:['Always','If and only if P(A) = 0','If and only if P(A) = 1','If and only if P(A) = 0 or 1'], k:'Independence'},
- {t:'Suppose you are in the final round of "Let\'s Make a Deal" and must choose from three doors – 1, 2 & 3. One door has a car behind it and the other two have goats. You choose Door 1 and the host opens Door 3, which has a goat behind it. To maximise the probability of winning, which would you choose?', o:['Switch your choice','Retain your choice','It doesn\'t matter — the probability of winning is the same with or without revealing one door'], k:'Conditional probability'},
+ {t:'Suppose you are in the final round of "Let\'s Make a Deal" and must choose from three doors – 1, 2 & 3. One door has a car behind it and the other two have goats. You choose Door 1. The host — who knows where the car is, always opens a goat door among the two you did not pick, and always offers a switch — opens Door 3, revealing a goat. To maximise the probability of winning, which would you choose?', o:['Switch your choice','Retain your choice','It doesn\'t matter — the probability of winning is the same with or without revealing one door'], k:'Conditional probability'},
  {t:'Cross-fertilizing a red and a white flower produces red flowers 25% of the time. We cross-fertilize five pairs of red and white flowers and produce five offspring. What is the probability that there are no red flower plants among the five offspring?', o:['23.7%','37.2%','22.5%','27.3%'], k:'Binomial'},
  {t:'A roulette wheel has 38 slots – 18 red, 18 black, and 2 green. You play five games and always bet on red. How many games can you expect to win?', o:['1.1165','2.3684','2.6316','4.7368'], k:'Expectation'},
  {t:'A roulette wheel has 38 slots – 18 red, 18 black, and 2 green. You play five games and always bet on red. What is the probability that you win all 5 games?', o:['0.0368','0.0238','0.0526','0.0473'], k:'Binomial'},
@@ -122,7 +124,7 @@ const Q = [
  {t:'Ahmed is playing a lottery where he must pick 2 numbers from 0–9 followed by an English letter (26 letters). He may choose the same number both times. If his ticket matches the 2 numbers and 1 letter drawn in order, he wins the grand prize of $10,405. If just his letter matches but one or both numbers do not match, he wins $100. Otherwise he wins nothing. The game costs $5 to play. He has chosen 04R. What is the expected net profit from playing this ticket?', o:['−$2.81','$2.81','−$1.82','$1.82'], k:'Expectation'},
  {t:'Assume you sell sandwiches. 70% of people choose egg and the rest choose chicken. What is the probability of selling exactly 2 egg sandwiches to the next 3 customers?', o:['0.343','0.063','0.44','0.027'], k:'Binomial'},
  {t:'What is the probability that a recruit has HIV, given he tested positive on a first ELISA test? The prior probability of anyone having HIV is 0.00148. The true-positive rate for ELISA is 93% and the true-negative rate is 99%.', o:['12%','80%','42%','14%'], k:'Bayes'},
- {t:'(Continuing Q29) What is the probability of having HIV, given he tested positive on ELISA a second time as well? Prior 0.00148, true-positive rate 93%, true-negative rate 99%.', o:['20%','42%','93%','88%'], k:'Bayes'},
+ {t:'(Continuing Q29) What is the probability of having HIV, given he tested positive on ELISA a second time as well? Prior 0.00148, true-positive rate 93%, true-negative rate 99%. Assume the two test results are independent given the true disease status.', o:['20%','42%','93%','88%'], k:'Bayes'},
  {t:'You are playing a game in which a fair coin is tossed multiple times. You have already lost three times, guessing heads when tails appeared. Which statement is correct?', o:['You should guess heads again since tails has already occurred thrice and heads is more likely now','You should say tails because guessing heads is not making you win','You have the same probability of winning with either guess — 50-50 regardless','None of these'], k:'Independence'},
  {t:'Inference using the frequentist approach will always yield the same result as the Bayesian approach.', o:['TRUE','FALSE'], k:'Bayes'},
  {t:'Hospital records show that 75% of patients suffering from a disease die due to that disease. What is the probability that exactly 4 out of 6 randomly selected patients recover?', o:['0.17798','0.13184','0.03295','0.35596'], k:'Binomial'},
@@ -152,7 +154,7 @@ Q.forEach((q,i)=>{
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>'); }
 
 // ---------- Timer & progress ----------
-const start = Date.now(); let elapsed = 0, finished = false;
+let start = Date.now(); let elapsed = 0, finished = false;
 setInterval(()=>{ if(finished) return; elapsed = Math.floor((Date.now()-start)/1000);
   document.getElementById('timer').textContent = fmt(elapsed); }, 1000);
 function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
@@ -189,7 +191,7 @@ document.getElementById('submitBtn').onclick = ()=>{
   const cal = {};
   rows.forEach(r=>{ if(r.conf!=='—'){ cal[r.conf]=cal[r.conf]||{c:0,t:0}; cal[r.conf].t++; if(r.ok) cal[r.conf].c++; } });
 
-  let rep = `PROBABILITY MOCK EXAM — RESULTS\nSource: Analytics Vidhya 40 probability questions\nDate: ${new Date().toISOString().slice(0,10)}\nScore: ${score}/${Q.length} (${Math.round(100*score/Q.length)}%)\nTime: ${fmt(elapsed)}\n\nBY TOPIC\n`;
+  let rep = `PROBABILITY MOCK EXAM — RESULTS\nSource: Analytics Vidhya 40 probability questions\nDate: ${new Date().toLocaleDateString('en-CA')}\nScore: ${score}/${Q.length} (${Math.round(100*score/Q.length)}%)\nTime: ${fmt(elapsed)}\n\nBY TOPIC\n`;
   Object.entries(topics).forEach(([k,v])=>rep+=`- ${k}: ${v.c}/${v.t}\n`);
   rep += `\nCONFIDENCE CALIBRATION\n`;
   Object.entries(cal).forEach(([k,v])=>rep+=`- ${k}: ${v.c}/${v.t} correct\n`);
@@ -197,15 +199,34 @@ document.getElementById('submitBtn').onclick = ()=>{
   rep += `\nPER QUESTION (Q#, topic, my answer, result, confidence)\n`;
   rows.forEach(r=>rep+=`Q${r.n} | ${r.topic} | ${r.you} | ${r.ok?'CORRECT':'WRONG'} | ${r.conf}\n`);
   rep += `\nWRONG: ${rows.filter(r=>!r.ok).map(r=>'Q'+r.n).join(', ')||'none'}\n`;
+  const wrong = rows.filter(r=>!r.ok);
+  if (wrong.length) {
+    rep += `\nMISSED QUESTIONS — full text, options, and my pick (correct answers omitted on purpose)\n`;
+    wrong.forEach(r=>{
+      const q = Q[r.n-1];
+      rep += `\nQ${r.n} [${q.k}] (confidence: ${r.conf})\n${q.t}\n`;
+      q.o.forEach((o,j)=>{ rep += `  ${L[j]}) ${o}${r.you===L[j]?'   <-- my answer':''}\n`; });
+      if (r.you==='—') rep += `  (left unanswered)\n`;
+    });
+  }
   rep += `\nPlease interpret these results: identify my weak topics, what concepts each wrong question tests, and suggest what to review.`;
   document.getElementById('report').value = rep;
   document.getElementById('results').style.display='block';
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
 
   document.getElementById('retryWrong').onclick = ()=>{
-    rows.forEach(r=>{ document.getElementById('q'+(r.n-1)).classList.toggle('hidden', r.ok); });
-    document.querySelectorAll('input[type=radio]').forEach(x=>x.checked=false);
-    document.getElementById('results').style.display='none'; finished=false;
+    rows.forEach(r=>{
+      const d = document.getElementById('q'+(r.n-1));
+      d.classList.toggle('hidden', r.ok); d.classList.remove('unanswered-flag');
+      if (!r.ok) { // clear only the wrong ones; hidden correct answers stay checked and keep scoring
+        document.querySelectorAll(`input[name=q${r.n-1}]`).forEach(x=>x.checked=false);
+        const c = document.querySelector(`select[name=c${r.n-1}]`); if (c) c.value='';
+      }
+    });
+    document.getElementById('results').style.display='none';
+    finished=false; start=Date.now(); elapsed=0;
+    document.getElementById('timer').textContent='00:00';
+    quiz.dispatchEvent(new Event('change'));
     window.scrollTo({top:0,behavior:'smooth'});
   };
 };
@@ -216,7 +237,7 @@ document.getElementById('copyBtn').onclick = ()=>{
 document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Clear all answers?')) location.reload(); };
 </script>
 <script>window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] } };</script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script async src="vendor/mathjax/tex-mml-chtml.js"></script>
 <script>
 /* AI study tutor — shared by probability-study-guide.html and probability-mock-exam.html.
    Usage: Tutor.init({ title, system, context: () => string, quick: [{label, prompt: () => string}] })
