@@ -1,0 +1,9 @@
+.git
+.gitignore
+.assetsignore
+wrangler.jsonc
+README.md
+node_modules
+results
+evaluations
+practice

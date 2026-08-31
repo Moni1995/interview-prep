@@ -1,0 +1,9 @@
+// Cloudflare Workers config — static-assets-only site (no Worker script).
+// "name" must match the Worker name in the Cloudflare dashboard.
+{
+  "name": "interview-prep",
+  "compatibility_date": "2026-08-28",
+  "assets": {
+    "directory": "./"
+  }
+}
